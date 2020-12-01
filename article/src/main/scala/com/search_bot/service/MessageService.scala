@@ -4,13 +4,14 @@ import cats.MonadError
 import com.bot4s.telegram.methods.ForwardMessage
 import com.search_bot.domain.Messages.{GetArticle, ScanArticle, TelegramMessage}
 import com.search_bot.domain.Responses.{FailHandleMessage, SuccessfullyRetrieve, SuccessfullySave, TelegramResponse}
+import com.search_bot.repository.ArticleRepository
 
 trait MessageService[F[_]] {
   def handle(message: Option[TelegramMessage]): F[TelegramResponse]
 }
 
 object MessageService {
-  def messageService[F[_]](implicit F: MonadError[F, Throwable]): F[MessageService[F]] = F.pure {
+  def messageService[F[_]](articleRepo: ArticleRepository[F])(implicit F: MonadError[F, Throwable]): F[MessageService[F]] = F.pure {
     case Some(m@ScanArticle(_)) => scanArticle(m)
     case Some(m@GetArticle(_)) => getArticle(m)
     //case _ => F.pure(FailHandleMessage())

@@ -7,9 +7,7 @@ object Messages {
   sealed trait TelegramMessage {
     val msg: Message
   }
-
   case class ScanArticle(msg: Message) extends TelegramMessage
-
   case class GetArticle(msg: Message) extends TelegramMessage
 
   def of(message: Message):Option[TelegramMessage] = message.text.flatMap {

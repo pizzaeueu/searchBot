@@ -20,8 +20,10 @@ object Dependencies {
   }
 
   object Database {
-    val doobie = "org.tpolecat" %% "doobie-core" % "0.9.0"
-    val doobiePostgres = "org.tpolecat" %% "doobie-postgres"  % "0.9.0"
+    val doobieVersion = "0.9.0"
+    val doobie = "org.tpolecat" %% "doobie-core" % doobieVersion
+    val doobiePostgres = "org.tpolecat" %% "doobie-postgres"  % doobieVersion
+    val doobieHikari = "org.tpolecat" %% "doobie-hikari" % doobieVersion
   }
 
   object Config {

@@ -5,16 +5,11 @@ ThisBuild / scalaVersion := "2.12.9"
 ThisBuild / version := "0.0.1-SNAPSHOT"
 
 lazy val searchBot  =
-  project.in(file(".")).aggregate(persistence, main, article).settings(
+  project.in(file(".")).aggregate(main, article).settings(
     run := {
       (run in main in Compile).evaluated
     }
   )
-
-lazy val persistence =
-  project
-    .in(file("persistence"))
-    .settings(commonSettings)
 
 lazy val main =
   project
@@ -31,7 +26,10 @@ lazy val article =
       libraryDependencies ++= Seq(
         Telegram.bot4s,
         Sttp.softwareMill,
-        Config.pureConfig
+        Config.pureConfig,
+        Database.doobie,
+        Database.doobiePostgres,
+        Database.doobieHikari
       )
     )
 
