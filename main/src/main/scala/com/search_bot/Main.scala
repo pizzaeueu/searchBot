@@ -1,10 +1,11 @@
 package com.search_bot
 
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
+import scala.concurrent.ExecutionContext
 
 object Main extends App {
 
   import cats.effect._
+
   implicit val executionContext: ExecutionContext =
     ExecutionContext.global
 

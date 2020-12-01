@@ -5,7 +5,7 @@ ThisBuild / scalaVersion := "2.12.9"
 ThisBuild / version := "0.0.1-SNAPSHOT"
 
 lazy val searchBot  =
-  project.in(file(".")).aggregate(domain, persistence, controller, main).settings(
+  project.in(file(".")).aggregate(domain, persistence, controller, main, article).settings(
     run := {
       (run in main in Compile).evaluated
     }
@@ -28,6 +28,7 @@ lazy val main =
     .in(file("main"))
     .settings(commonSettings)
     .dependsOn(controller)
+    .dependsOn(article)
 
 
 lazy val controller =
@@ -38,6 +39,19 @@ lazy val controller =
       libraryDependencies ++= Seq(
         Telegram.bot4s,
         Sttp.softwareMill
+      )
+    )
+
+
+lazy val article =
+  project
+    .in(file("article"))
+    .settings(commonSettings)
+    .settings(
+      libraryDependencies ++= Seq(
+        Telegram.bot4s,
+        Sttp.softwareMill,
+        Config.pureConfig
       )
     )
 
