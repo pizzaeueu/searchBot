@@ -4,7 +4,8 @@ import cats.MonadError
 import cats.effect.{Async, Resource}
 import com.search_bot.domain.Article.Article
 import doobie.implicits._
-import doobie.{Read, Transactor}
+import doobie.postgres.implicits._
+import doobie.{LogHandler, Read, Transactor}
 
 
 trait ArticleRepository[F[_]] {
@@ -15,18 +16,19 @@ trait ArticleRepository[F[_]] {
 }
 
 object ArticleRepository {
+  implicit val han = LogHandler.jdkLogHandler
   def postgresRepository[F[_] : Async](resource: Resource[F, Transactor[F]])
                                       (implicit F: MonadError[F, Throwable]): F[ArticleRepository[F]] = F.pure(
     new ArticleRepository[F] {
       override def getByUrl(url: String): F[Option[Article]] = {
         resource.use { xa =>
-          Queries.getByUrl(url).transact(xa)
+          Queries.getByUrl(url).transact(xa).onSqlException(F.raiseError(new RuntimeException("Error")))
         }
       }
 
       override def getAll(): F[List[Int]] =
         resource.use { xa =>
-          Queries.getAll().transact(xa)
+          Queries.getAll().transact(xa).onSqlException(F.pure(println("EXCEPTION!!!!!!!!!!!!!!!!!!!!")))
         }
     }
   )

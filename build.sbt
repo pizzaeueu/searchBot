@@ -29,7 +29,8 @@ lazy val article =
         Config.pureConfig,
         Database.doobie,
         Database.doobiePostgres,
-        Database.doobieHikari
+        Database.doobieHikari,
+        Log.logback
       )
     )
 
@@ -45,3 +46,10 @@ lazy val commonSettings = Seq(
     "-Xfatal-warnings"
   )
 )
+
+enablePlugins(FlywayPlugin)
+libraryDependencies += "postgresql" % "postgresql" % "9.1-901.jdbc4"
+flywayUrl := "jdbc:postgresql://localhost:5432/bot_db"
+flywayUser := ""
+flywayPassword := ""
+flywayLocations += "db/migration"

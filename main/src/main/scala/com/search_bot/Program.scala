@@ -21,6 +21,7 @@ object Program {
       databaseConfig <- SearchBotConfiguration.getDatabaseConfig
       connectionResource <- SearchBotConfiguration.getDbConnectionResource(databaseConfig)
       articleRepo <- ArticleRepository.postgresRepository(connectionResource)
+      res <- articleRepo.getAll()
       messageService <- MessageService.messageService(articleRepo)(F)
       _ <- MessageListenController.bot4sController(botTokenConfig.botToken, messageService).listen
     } yield ()

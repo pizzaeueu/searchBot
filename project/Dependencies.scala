@@ -30,5 +30,9 @@ object Dependencies {
     val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.14.0"
   }
 
+  object Log {
+    val logback = "ch.qos.logback" % "logback-classic" % "1.1.3"
+  }
+
 
 }
