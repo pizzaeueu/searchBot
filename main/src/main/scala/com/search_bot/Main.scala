@@ -1,17 +1,11 @@
 package com.search_bot
 
+import cats.effect.{IOApp, _}
+
 import scala.concurrent.ExecutionContext
 
-object Main extends App {
+object Main extends IOApp {
+  implicit val executionContext: ExecutionContext = ExecutionContext.global
 
-  import cats.effect._
-
-  implicit val executionContext: ExecutionContext =
-    ExecutionContext.global
-
-  implicit val cs: ContextShift[IO] =
-    IO.contextShift(executionContext)
-
-  Program.dsl[cats.effect.IO].unsafeRunSync()
-
+  override def run(args: List[String]): IO[ExitCode] = Program.dsl[cats.effect.IO].as(ExitCode.Success)
 }

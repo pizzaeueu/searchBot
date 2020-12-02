@@ -13,7 +13,7 @@ trait MessageService[F[_]] {
 
 object MessageService {
   def messageService[F[_]](articleRepo: ArticleRepository[F])(implicit F: MonadError[F, Throwable]): F[MessageService[F]] = F.pure {
-    case Some(m@ScanArticle(_)) => articleRepo.getAll() *> scanArticle(m)
+    case Some(m@ScanArticle(_)) => scanArticle(m)
     case Some(m@GetArticle(_)) => getArticle(m)
     //case _ => F.pure(FailHandleMessage())
   }

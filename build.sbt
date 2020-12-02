@@ -4,6 +4,8 @@ ThisBuild / organization := "com.search_bot"
 ThisBuild / scalaVersion := "2.12.9"
 ThisBuild / version := "0.0.1-SNAPSHOT"
 
+//todo add scalafmt
+
 lazy val searchBot  =
   project.in(file(".")).aggregate(main, article).settings(
     run := {
@@ -16,6 +18,11 @@ lazy val main =
     .in(file("main"))
     .settings(commonSettings)
     .dependsOn(article)
+    .settings(
+      libraryDependencies ++=Seq(
+        Database.flywayCore
+      )
+    )
 
 
 lazy val article =
@@ -46,10 +53,3 @@ lazy val commonSettings = Seq(
     "-Xfatal-warnings"
   )
 )
-
-enablePlugins(FlywayPlugin)
-libraryDependencies += "postgresql" % "postgresql" % "9.1-901.jdbc4"
-flywayUrl := "jdbc:postgresql://localhost:5432/bot_db"
-flywayUser := ""
-flywayPassword := ""
-flywayLocations += "db/migration"

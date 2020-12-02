@@ -24,6 +24,7 @@ object Dependencies {
     val doobie = "org.tpolecat" %% "doobie-core" % doobieVersion
     val doobiePostgres = "org.tpolecat" %% "doobie-postgres"  % doobieVersion
     val doobieHikari = "org.tpolecat" %% "doobie-hikari" % doobieVersion
+    val flywayCore = "org.flywaydb" % "flyway-core" % "6.2.4"
   }
 
   object Config {

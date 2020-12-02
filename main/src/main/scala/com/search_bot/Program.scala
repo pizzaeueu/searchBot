@@ -19,9 +19,11 @@ object Program {
     for {
       botTokenConfig <- SearchBotConfiguration.getBotToken
       databaseConfig <- SearchBotConfiguration.getDatabaseConfig
-      connectionResource <- SearchBotConfiguration.getDbConnectionResource(databaseConfig)
+      migrate <- db.Configuration.migrate(databaseConfig)
+      _ <- F.pure(println(s"$migrate migrations were applied"))
+      connectionResource = SearchBotConfiguration.getDbConnectionResource(databaseConfig)
       articleRepo <- ArticleRepository.postgresRepository(connectionResource)
-      res <- articleRepo.getAll()
+      _ <- articleRepo.getAll().map(println)
       messageService <- MessageService.messageService(articleRepo)(F)
       _ <- MessageListenController.bot4sController(botTokenConfig.botToken, messageService).listen
     } yield ()

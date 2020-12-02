@@ -28,7 +28,7 @@ object ArticleRepository {
 
       override def getAll(): F[List[Int]] =
         resource.use { xa =>
-          Queries.getAll().transact(xa).onSqlException(F.pure(println("EXCEPTION!!!!!!!!!!!!!!!!!!!!")))
+          Queries.getAll().transact(xa)
         }
     }
   )
