@@ -50,6 +50,7 @@ lazy val commonSettings = Seq(
   ),
   Compile / console / scalacOptions --= Seq(
     "-Wunused:_",
+    "-language:higherKinds",
     "-Xfatal-warnings"
   )
 )

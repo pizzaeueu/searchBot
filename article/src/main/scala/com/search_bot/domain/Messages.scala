@@ -4,16 +4,29 @@ import com.bot4s.telegram.models.Message
 
 object Messages {
 
-  sealed trait TelegramMessage {
-    val msg: Message
-  }
-  case class ScanArticle(msg: Message) extends TelegramMessage
-  case class GetArticle(msg: Message) extends TelegramMessage
+  sealed trait InputMessages  {val command: String }
+  case class Scan(command: String ) extends InputMessages
+  case class Find(command: String ) extends InputMessages
 
-  def of(message: Message):Option[TelegramMessage] = message.text.flatMap {
-    case s if s.startsWith("/scan") => ScanArticle(message).some
-    case s if s.startsWith("/find") => GetArticle(message).some
-    case _ => None
+  sealed trait TelegramMessage
+  case class ScanArticle(msg: Message) extends TelegramMessage
+  case class GetArticle(keyword: String, chatId: Long) extends TelegramMessage
+  case class CommandNotSupported(chatId: Long, command: String) extends TelegramMessage
+
+  def of(message: Message): TelegramMessage = {
+    message.text.flatMap(scanMessageText) match {
+      case Some(Scan(command)) => ScanArticle(message)
+      case Some(Find(keyword)) => GetArticle(keyword, message.chat.id)
+      case _ => CommandNotSupported(message.chat.id, message.text.getOrElse(""))
+    }
+  }
+
+  private def scanMessageText(text: String): Option[InputMessages] = {
+    text match {
+      case s if s.startsWith("/scan ") & s.length > 6 => Scan(s.substring(6)).some
+      case s if s.startsWith("/find ") & s.length > 6 => Find(s.substring(6)).some
+      case _ => none[InputMessages]
+    }
   }
 
 }

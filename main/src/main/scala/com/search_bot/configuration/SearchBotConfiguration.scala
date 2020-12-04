@@ -3,6 +3,7 @@ package com.search_bot.configuration
 import cats.MonadError
 import cats.effect.{Async, Blocker, ContextShift, Resource, Sync}
 import cats.syntax.all._
+import com.search_bot.error.Errors.ServiceError
 import doobie.{ExecutionContexts, Transactor}
 import doobie.hikari.HikariTransactor
 import pureconfig.ConfigSource
