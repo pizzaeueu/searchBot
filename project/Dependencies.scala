@@ -35,5 +35,15 @@ object Dependencies {
     val logback = "ch.qos.logback" % "logback-classic" % "1.1.3"
   }
 
+  object Http4s {
+   val http4sVersion = "0.20.22"
+   val dsl =  "org.http4s" %% "http4s-dsl" % http4sVersion
+   val client = "org.http4s" %% "http4s-blaze-client" % http4sVersion
+  }
+
+  object Utils {
+    val jsoup = "org.jsoup" % "jsoup" % "1.13.1"
+  }
+
 
 }

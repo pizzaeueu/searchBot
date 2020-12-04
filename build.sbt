@@ -7,7 +7,7 @@ ThisBuild / version := "0.0.1-SNAPSHOT"
 //todo add scalafmt
 
 lazy val searchBot  =
-  project.in(file(".")).aggregate(main, article).settings(
+  project.in(file(".")).aggregate(main, article, reader).settings(
     run := {
       (run in main in Compile).evaluated
     }
@@ -39,7 +39,18 @@ lazy val article =
         Database.doobieHikari,
         Log.logback
       )
+    ).dependsOn(reader)
+
+lazy val reader =
+  project
+    .in(file("reader"))
+    .settings(commonSettings).settings(
+    libraryDependencies ++= Seq(
+      Http4s.dsl,
+      Http4s.client,
+      Utils.jsoup
     )
+  )
 
 
 lazy val commonSettings = Seq(
