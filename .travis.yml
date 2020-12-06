@@ -1,0 +1,11 @@
+sudo: false
+
+language: scala
+
+jdk:
+  - openjdk11
+
+scala:
+  - 2.12.10
+
+script: sbt ++$TRAVIS_SCALA_VERSION clean test
