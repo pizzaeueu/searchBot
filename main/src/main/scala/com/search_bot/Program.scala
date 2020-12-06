@@ -8,7 +8,7 @@ import com.search_bot.controller.MessageListenController
 import com.search_bot.dao.HtmlReader
 import com.search_bot.error.Errors.ServiceError
 import com.search_bot.repository.ArticleRepository
-import com.search_bot.service.MessageService
+import com.search_bot.service.{HtmlParser, MessageService}
 import doobie.util.transactor.Transactor
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.jsoup.Jsoup
@@ -26,8 +26,9 @@ object Program {
       botTokenConfig <- SearchBotConfiguration.getBotToken
       databaseConfig <- SearchBotConfiguration.getDatabaseConfig
       clientResource = BlazeClientBuilder[F](global).resource
-      articleReader = HtmlReader.http4sClientReader[F](clientResource)
-      //res <- articleReader.retrieveHtml("https://habr.com/ru/post/308562/")
+      parser = HtmlParser.htmlParser[F]
+      articleReader = HtmlReader.http4sClientReader[F](clientResource, parser)
+      //res <- articleReader.retrieveKeywords("https://habr.com/ru/post/308562/")
       //_ <- {
       //  println(Jsoup.parse(res).body().text())
       //  F.pure(())

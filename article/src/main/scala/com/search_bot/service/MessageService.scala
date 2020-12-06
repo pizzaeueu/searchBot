@@ -25,9 +25,8 @@ object MessageService {
 
   private def scanArticle[F[_]: Sync](url: String, chatId: Long, reader: HtmlReader[F], articleRepo: ArticleRepository[F])(implicit F: MonadError[F, Throwable]): F[TelegramResponse] = {
     val out: F[TelegramResponse] = for {
-     text <- reader.retrieveHtml(url)
-     keywords <- getUniqueWords(text)
-     article = Article(ArticleUrl(url), ChatId(chatId), MessageId(97.toString), ArticleWords(keywords))
+      keywords <- reader.retrieveKeywords(url)
+      article = Article(ArticleUrl(url), ChatId(chatId), MessageId(97.toString), ArticleWords(keywords))
       _ <- articleRepo.saveArticle(article)
     } yield SuccessfullySave(SendMessage(chatId, "Saved"))
 
@@ -40,13 +39,11 @@ object MessageService {
           case x if x.nonEmpty => F.pure(x.head)
           case _ => F.raiseError(new RuntimeException(s"Article with $keyword keyword wasn't found"))
         }
-        response <- F.pure(SuccessfullySave(ForwardMessage(chatId, chatId, Some(true), article.messageId.value.toInt)))
+        response <- F.pure(SuccessfullySave(SendMessage(chatId, article.url.value)))
       } yield response
 
   private def generateError[F[_]](err: Throwable, chatId: Long)(implicit F: MonadError[F, Throwable]):F[TelegramResponse] =
     F.pure(FailHandleMessage(SendMessage(chatId, err.getMessage)))
-
-  private def getUniqueWords[F[_]: Sync](text: String): F[List[String]] = Sync[F].delay(text.split("\\W+").toList.distinct)
 
       //SuccessfullySave(ForwardMessage(message.msg.chat.id, message.msg.chat.id, Some(true), message.msg.messageId))
 
