@@ -1,5 +1,7 @@
 import Dependencies._
 
+enablePlugins(DockerComposePlugin)
+
 ThisBuild / organization := "com.search_bot"
 ThisBuild / scalaVersion := "2.12.9"
 ThisBuild / version := "0.0.1-SNAPSHOT"
@@ -65,3 +67,5 @@ lazy val commonSettings = Seq(
     "-Xfatal-warnings"
   )
 )
+
+//dockerComposeUp -useStaticPorts

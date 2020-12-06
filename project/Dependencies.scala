@@ -16,7 +16,7 @@ object Dependencies {
   }
 
   object Test {
-    val scalaTest = "org.scalatest" %% "scalatest" % "3.2.3"
+    val scalaTest = "org.scalatest" %% "scalatest" % "3.2.3" % "test"
   }
 
   object Database {

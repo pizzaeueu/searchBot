@@ -17,6 +17,7 @@ trait ArticleRepository[F[_]] {
 
   def getByKeywordForChat(word: String, chatId: Long): F[List[Article]]
 
+  def saveArticle(article: Article): F[Int]
 
 }
 
@@ -41,6 +42,11 @@ object ArticleRepository {
           Queries.getByKeywordForChat(word, chatId).transact(xa)
         }
       }
+
+      override def saveArticle(article: Article): F[Int] =
+        resource.use {
+          xa => Queries.insertArticle(article).transact(xa)
+        }
     }
 
   object Queries {
@@ -55,6 +61,10 @@ object ArticleRepository {
     def getByKeywordForChat(searchWord: String, chatId: Long) = {
       sql"SELECT url, chatId, messageId, words FROM articles WHERE words @> ARRAY[$searchWord]::varchar[] AND chatId = $chatId"
         .query[Article].to[List]
+    }
+
+    def insertArticle(article: Article) = {
+      sql"insert into articles (url, chatid, messageid, words) VALUES (${article.url}, ${article.chatId}, 97, ${article.words});".update.run
     }
   }
 

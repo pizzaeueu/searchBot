@@ -26,37 +26,19 @@ object Program {
       botTokenConfig <- SearchBotConfiguration.getBotToken
       databaseConfig <- SearchBotConfiguration.getDatabaseConfig
       clientResource = BlazeClientBuilder[F](global).resource
-      client = HtmlReader.http4sClientReader[F](clientResource)
-      res <- client.retrieveHtml("https://habr.com/ru/post/308562/")
-      _ <- {
-        println(Jsoup.parse(res).body().text())
-        F.pure(())
-      }
+      articleReader = HtmlReader.http4sClientReader[F](clientResource)
+      //res <- articleReader.retrieveHtml("https://habr.com/ru/post/308562/")
+      //_ <- {
+      //  println(Jsoup.parse(res).body().text())
+      //  F.pure(())
+      //}
       migrate <- db.Configuration.migrate(databaseConfig)
       _ <- F.pure(println(s"$migrate migrations were applied"))
       connectionResource = SearchBotConfiguration.getDbConnectionResource(databaseConfig)
       articleRepo = ArticleRepository.postgresRepository(connectionResource)
       _ <- articleRepo.getByKeywordForChat("monad", 62227427).map(println)
-      messageService = MessageService.messageService(articleRepo)(F)
+      messageService = MessageService.messageService(articleRepo, articleReader)
       _ <- MessageListenController.bot4sController(botTokenConfig.botToken, messageService).listen
     } yield ()
   }
-
-  def withTransactor[F[_] : Async : ContextShift](xa: Transactor[F])(
-    implicit ec: ExecutionContext,
-    F: MonadError[F, Throwable]
-  ) = {
-    for {
-      botTokenConfig <- SearchBotConfiguration.getBotToken
-      databaseConfig <- SearchBotConfiguration.getDatabaseConfig
-      migrate <- db.Configuration.migrate(databaseConfig)
-      _ <- F.pure(println(s"$migrate migrations were applied"))
-      connectionResource = SearchBotConfiguration.getDbConnectionResource(databaseConfig)
-      articleRepo = ArticleRepository.postgresRepository(connectionResource)
-      _ <- articleRepo.getAll().map(println)
-      messageService = MessageService.messageService(articleRepo)(F)
-      _ <- MessageListenController.bot4sController(botTokenConfig.botToken, messageService).listen
-    } yield ()
-  }
-
 }

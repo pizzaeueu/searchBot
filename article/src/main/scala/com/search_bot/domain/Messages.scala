@@ -9,13 +9,13 @@ object Messages {
   case class Find(command: String ) extends InputMessages
 
   sealed trait TelegramMessage
-  case class ScanArticle(msg: Message) extends TelegramMessage
+  case class ScanArticle(url: String, chatId: Long) extends TelegramMessage
   case class GetArticle(keyword: String, chatId: Long) extends TelegramMessage
   case class CommandNotSupported(chatId: Long, command: String) extends TelegramMessage
 
   def of(message: Message): TelegramMessage = {
     message.text.flatMap(scanMessageText) match {
-      case Some(Scan(command)) => ScanArticle(message)
+      case Some(Scan(url)) => ScanArticle(url, message.chat.id)
       case Some(Find(keyword)) => GetArticle(keyword, message.chat.id)
       case _ => CommandNotSupported(message.chat.id, message.text.getOrElse(""))
     }
