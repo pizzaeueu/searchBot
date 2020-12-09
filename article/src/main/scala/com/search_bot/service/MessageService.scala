@@ -1,11 +1,11 @@
 package com.search_bot.service
 
-import cats.MonadError
 import cats.effect.Sync
 import cats.syntax.all._
-import com.bot4s.telegram.methods.{ForwardMessage, SendMessage}
+import com.bot4s.telegram.methods.SendMessage
+import com.evolutiongaming.catshelper.MonadThrowable
 import com.search_bot.dao.HtmlReader
-import com.search_bot.domain.Article.{Article, ArticleUrl, ArticleWords, ChatId, MessageId}
+import com.search_bot.domain.Article._
 import com.search_bot.domain.Messages.{CommandNotSupported, GetArticle, ScanArticle, TelegramMessage}
 import com.search_bot.domain.Responses.{FailHandleMessage, SuccessfullySave, TelegramResponse}
 import com.search_bot.repository.ArticleRepository
@@ -15,15 +15,15 @@ trait MessageService[F[_]] {
 }
 
 object MessageService {
-  def messageService[F[_]: Sync](articleRepo: ArticleRepository[F], articleReader: HtmlReader[F])(implicit F: MonadError[F, Throwable]): MessageService[F] = {
+  def messageService[F[_]: Sync: MonadThrowable](articleRepo: ArticleRepository[F], articleReader: HtmlReader[F]): MessageService[F] = {
     case ScanArticle(url, chatId) => scanArticle(url, chatId, articleReader, articleRepo)
     case GetArticle(keyword, chatId) => getArticle(keyword, chatId, articleRepo).recoverWith {
       case err => generateError(err, chatId.toLong)
     }
-    case CommandNotSupported(chatId, command) => F.pure(FailHandleMessage(SendMessage(chatId, s"command $command not supported")))
+    case CommandNotSupported(chatId, command) => implicitly[MonadThrowable[F]].pure(FailHandleMessage(SendMessage(chatId, s"command $command not supported")))
   }
 
-  private def scanArticle[F[_]: Sync](url: String, chatId: Long, reader: HtmlReader[F], articleRepo: ArticleRepository[F])(implicit F: MonadError[F, Throwable]): F[TelegramResponse] = {
+  private def scanArticle[F[_]: Sync: MonadThrowable](url: String, chatId: Long, reader: HtmlReader[F], articleRepo: ArticleRepository[F]): F[TelegramResponse] = {
     val out: F[TelegramResponse] = for {
       keywords <- reader.retrieveKeywords(url)
       article = Article(ArticleUrl(url), ChatId(chatId), MessageId(97.toString), ArticleWords(keywords))
@@ -33,18 +33,16 @@ object MessageService {
     out
   }
 
-  private def getArticle[F[_]](keyword: String, chatId: Long, articleRepo: ArticleRepository[F])(implicit F: MonadError[F, Throwable]): F[TelegramResponse] =
+  private def getArticle[F[_]: MonadThrowable](keyword: String, chatId: Long, articleRepo: ArticleRepository[F]): F[TelegramResponse] =
       for {
         article <- articleRepo.getByKeywordForChat(keyword, chatId).flatMap[Article] {
-          case x if x.nonEmpty => F.pure(x.head)
-          case _ => F.raiseError(new RuntimeException(s"Article with $keyword keyword wasn't found"))
+          case x if x.nonEmpty => implicitly[MonadThrowable[F]].pure(x.head)
+          case _ => implicitly[MonadThrowable[F]].raiseError(new RuntimeException(s"Article with $keyword keyword wasn't found"))
         }
-        response <- F.pure(SuccessfullySave(SendMessage(chatId, article.url.value)))
+        response <- implicitly[MonadThrowable[F]].pure(SuccessfullySave(SendMessage(chatId, article.url.value)))
       } yield response
 
-  private def generateError[F[_]](err: Throwable, chatId: Long)(implicit F: MonadError[F, Throwable]):F[TelegramResponse] =
-    F.pure(FailHandleMessage(SendMessage(chatId, err.getMessage)))
-
-      //SuccessfullySave(ForwardMessage(message.msg.chat.id, message.msg.chat.id, Some(true), message.msg.messageId))
+  private def generateError[F[_]: MonadThrowable](err: Throwable, chatId: Long): F[TelegramResponse] =
+    implicitly[MonadThrowable[F]].pure(FailHandleMessage(SendMessage(chatId, err.getMessage)))
 
 }

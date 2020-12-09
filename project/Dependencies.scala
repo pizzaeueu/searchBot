@@ -43,6 +43,7 @@ object Dependencies {
 
   object Utils {
     val jsoup = "org.jsoup" % "jsoup" % "1.13.1"
+    val evoCatsHelper = "com.evolutiongaming" %% "cats-helper" % "2.1.3"
   }
 
 

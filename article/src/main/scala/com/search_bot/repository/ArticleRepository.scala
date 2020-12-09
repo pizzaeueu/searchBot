@@ -1,12 +1,11 @@
 package com.search_bot.repository
 
-import cats.MonadError
-import cats.effect.{Async, Resource}
+import cats.effect.Async
+import com.evolutiongaming.catshelper.MonadThrowable
 import com.search_bot.domain.Article.Article
-import com.search_bot.error.Errors.ServiceError
+import doobie.{Read, Transactor}
 import doobie.implicits._
 import doobie.postgres.implicits._
-import doobie.{LogHandler, Read, Transactor}
 
 
 trait ArticleRepository[F[_]] {
@@ -22,31 +21,21 @@ trait ArticleRepository[F[_]] {
 }
 
 object ArticleRepository {
-  implicit val han = LogHandler.jdkLogHandler
-  def postgresRepository[F[_] : Async](resource: Resource[F, Transactor[F]])
-                                      (implicit F: MonadError[F, Throwable]): ArticleRepository[F] =
+
+  def postgresRepository[F[_] : Async: MonadThrowable](transactor: Transactor[F]): ArticleRepository[F] =
     new ArticleRepository[F] {
-      override def getByUrl(url: String): F[Option[Article]] = {
-        resource.use { xa =>
-          Queries.getByUrl(url).transact(xa).onSqlException(F.raiseError(new RuntimeException("Error")))
-        }
-      }
+      override def getByUrl(url: String): F[Option[Article]] =
+        Queries.getByUrl(url).transact(transactor).onSqlException(implicitly[MonadThrowable[F]].raiseError(new RuntimeException("Error")))
 
-      override def getAll(): F[List[String]] =
-        resource.use { xa =>
-          Queries.getAll().transact(xa)
-        }
 
-      override def getByKeywordForChat(word: String, chatId: Long): F[List[Article]] = {
-        resource.use { xa =>
-          Queries.getByKeywordForChat(word, chatId).transact(xa)
-        }
-      }
+      override def getAll(): F[List[String]] = Queries.getAll().transact(transactor)
+
+
+      override def getByKeywordForChat(word: String, chatId: Long): F[List[Article]] =
+        Queries.getByKeywordForChat(word, chatId).transact(transactor)
 
       override def saveArticle(article: Article): F[Int] =
-        resource.use {
-          xa => Queries.insertArticle(article).transact(xa)
-        }
+        Queries.insertArticle(article).transact(transactor)
     }
 
   object Queries {

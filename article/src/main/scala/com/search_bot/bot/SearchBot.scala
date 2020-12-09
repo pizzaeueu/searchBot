@@ -1,29 +1,28 @@
 package com.search_bot.bot
 
-import cats.MonadError
-import cats.effect.{Async, ContextShift}
+import cats.effect.{ContextShift, Resource, Sync}
 import cats.syntax.all._
 import com.bot4s.telegram.cats.{Polling, TelegramBot}
 import com.bot4s.telegram.models.Message
 import com.search_bot.domain.Messages
-import com.search_bot.error.Errors.ServiceError
 import com.search_bot.service.MessageService
-import com.softwaremill.sttp.asynchttpclient.cats.AsyncHttpClientCatsBackend
+import com.softwaremill.sttp.SttpBackend
 
-abstract class AbstractBot[F[_] : Async : ContextShift](val token: String)
-  extends TelegramBot(token, AsyncHttpClientCatsBackend())
 
-class SearchBot[F[_] : Async : ContextShift](
-  token: String,
-  service: MessageService[F]
-)(implicit F: MonadError[F, Throwable]) extends AbstractBot[F](token) with Polling[F] {
-  override def receiveMessage(msg: Message): F[Unit] = for {
-      message <- F.pure(Messages.of(msg))
-      response <- service.handle(message)
-      _ <- {
-        msg.text.fold(unit) { _ =>
-          request(response.message).void
+object SearchBot {
+  def make[F[_] : Sync : ContextShift](token: String, server: SttpBackend[F, Nothing], service: MessageService[F]): Resource[F, TelegramBot[F]] = {
+
+    def create = new TelegramBot[F](token, server) with Polling[F]{
+      override def receiveMessage(msg: Message): F[Unit] = for {
+        response <- service.handle(Messages.of(msg))
+        _ <- {
+          msg.text.traverse_ { _ =>
+            request(response.message).void
+          }
         }
-      }
-    } yield ()
+      } yield ()
+    }
+
+    Resource.make(Sync[F].delay(create))(client => Sync[F].delay(client.shutdown()))
+  }
 }

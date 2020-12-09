@@ -59,13 +59,15 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
     Cats.core,
     Cats.effects,
-    Dependencies.Test.scalaTest
+    Dependencies.Test.scalaTest,
+    Utils.evoCatsHelper
   ),
   Compile / console / scalacOptions --= Seq(
     "-Wunused:_",
     "-language:higherKinds",
     "-Xfatal-warnings"
-  )
+  ),
+  resolvers += Resolver.bintrayRepo("evolutiongaming", "maven")
 )
 
 //dockerComposeUp -useStaticPorts
