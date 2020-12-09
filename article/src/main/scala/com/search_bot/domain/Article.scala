@@ -12,6 +12,11 @@ object Article {
 
   final case class ArticleWords(value: List[String])
 
-  final case class Article(url: ArticleUrl, chatId: ChatId, messageId: MessageId, words: ArticleWords)
+  final case class Article(
+      url: ArticleUrl,
+      chatId: ChatId,
+      messageId: MessageId,
+      words: ArticleWords
+  )
 
 }

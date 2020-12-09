@@ -10,7 +10,10 @@ trait HtmlReader[F[_]] {
 }
 
 object HtmlReader {
-  def http4sClientReader[F[_] : ConcurrentEffect](client: Client[F], parser: HtmlParser[F]): HtmlReader[F] = new HtmlReader[F] {
+  def http4sClientReader[F[_]: ConcurrentEffect](
+      client: Client[F],
+      parser: HtmlParser[F]
+  ): HtmlReader[F] = new HtmlReader[F] {
     override def retrieveKeywords(url: String): F[List[String]] =
       for {
         html <- client.expect[String](url)

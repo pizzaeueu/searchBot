@@ -7,8 +7,9 @@ object Errors {
     val details: Option[Map[String, String]]
   }
   case class ArticleNotFond(
-   errorMessage: String,
-   statusCode: Int = 404,
-   details: Option[Map[String, String]] = None) extends ServiceError
+      errorMessage: String,
+      statusCode: Int = 404,
+      details: Option[Map[String, String]] = None
+  ) extends ServiceError
 
 }

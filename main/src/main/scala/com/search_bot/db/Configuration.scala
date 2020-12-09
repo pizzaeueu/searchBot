@@ -14,6 +14,7 @@ object Configuration {
     def migrate(): F[Int] = Sync[F].delay(flyway.migrate())
   }
 
-  def migrate[F[_]: Sync](config: DatabaseConfig):F[Int] = new FlywayMigrator[F](config).migrate()
+  def migrate[F[_]: Sync](config: DatabaseConfig): F[Int] =
+    new FlywayMigrator[F](config).migrate()
 
 }

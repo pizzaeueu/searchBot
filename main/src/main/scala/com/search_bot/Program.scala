@@ -15,8 +15,8 @@ import scala.concurrent.ExecutionContext
 
 object Program {
 
-  def dsl[F[_] : Async : ContextShift: ConcurrentEffect: MonadThrowable](
-    implicit ec: ExecutionContext
+  def dsl[F[_]: Async: ContextShift: ConcurrentEffect: MonadThrowable](implicit
+      ec: ExecutionContext
   ): Resource[F, Unit] = {
     for {
       botTokenConfig <- SearchBotConfiguration.getBotToken.toResource
@@ -25,7 +25,9 @@ object Program {
       parser = HtmlParser.htmlParser[F]
       articleReader = HtmlReader.http4sClientReader[F](clientResource, parser)
       _ <- db.Configuration.migrate(databaseConfig).toResource
-      transactor <- SearchBotConfiguration.getDbConnectionResource(databaseConfig)
+      transactor <- SearchBotConfiguration.getDbConnectionResource(
+        databaseConfig
+      )
       articleRepo = ArticleRepository.postgresRepository(transactor)
       messageService = MessageService.messageService(articleRepo, articleReader)
       server = AsyncHttpClientCatsBackend()
