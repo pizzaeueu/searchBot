@@ -16,18 +16,18 @@ object SearchBot {
   ): Resource[F, TelegramBot[F]] = {
 
     def create = new TelegramBot[F](token, server) with Polling[F] {
-      override def receiveMessage(msg: Message): F[Unit] = for {
-        response <- service.handle(Messages.of(msg))
-        _ <- {
-          msg.text.traverse_ { _ =>
-            request(response.message).void
+      override def receiveMessage(msg: Message): F[Unit] =
+        for {
+          response <- service.handle(Messages.of(msg))
+          _ <- {
+            msg.text.traverse_ { _ =>
+              request(response.message).void
+            }
           }
-        }
-      } yield ()
+        } yield ()
     }
 
     Resource.make(Sync[F].delay(create))(client =>
-      Sync[F].delay(client.shutdown())
-    )
+      Sync[F].delay(client.shutdown()))
   }
 }

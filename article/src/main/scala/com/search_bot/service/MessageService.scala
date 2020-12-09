@@ -31,8 +31,9 @@ object MessageService {
     case ScanArticle(url, chatId) =>
       scanArticle(url, chatId, articleReader, articleRepo)
     case GetArticle(keyword, chatId) =>
-      getArticle(keyword, chatId, articleRepo).recoverWith { case err =>
-        generateError(err, chatId.toLong)
+      getArticle(keyword, chatId, articleRepo).recoverWith {
+        case err =>
+          generateError(err, chatId.toLong)
       }
     case CommandNotSupported(chatId, command) =>
       implicitly[MonadThrowable[F]].pure(

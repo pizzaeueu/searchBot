@@ -5,15 +5,20 @@ enablePlugins(DockerComposePlugin)
 ThisBuild / organization := "com.search_bot"
 ThisBuild / scalaVersion := "2.12.9"
 ThisBuild / version := "0.0.1-SNAPSHOT"
+scalafmtOnCompile in ThisBuild := true
+scalafmtTestOnCompile in ThisBuild := true
 
 //todo add scalafmt
 
-lazy val searchBot  =
-  project.in(file(".")).aggregate(main, article, reader).settings(
-    run := {
-      (run in main in Compile).evaluated
-    }
-  )
+lazy val searchBot =
+  project
+    .in(file("."))
+    .aggregate(main, article, reader)
+    .settings(
+      run := {
+        (run in main in Compile).evaluated
+      }
+    )
 
 lazy val main =
   project
@@ -21,11 +26,10 @@ lazy val main =
     .settings(commonSettings)
     .dependsOn(article)
     .settings(
-      libraryDependencies ++=Seq(
+      libraryDependencies ++= Seq(
         Database.flywayCore
       )
     )
-
 
 lazy val article =
   project
@@ -41,19 +45,20 @@ lazy val article =
         Database.doobieHikari,
         Log.logback
       )
-    ).dependsOn(reader)
+    )
+    .dependsOn(reader)
 
 lazy val reader =
   project
     .in(file("reader"))
-    .settings(commonSettings).settings(
-    libraryDependencies ++= Seq(
-      Http4s.dsl,
-      Http4s.client,
-      Utils.jsoup
+    .settings(commonSettings)
+    .settings(
+      libraryDependencies ++= Seq(
+        Http4s.dsl,
+        Http4s.client,
+        Utils.jsoup
+      )
     )
-  )
-
 
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(

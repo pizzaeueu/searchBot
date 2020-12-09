@@ -12,9 +12,14 @@ class MessagesTest extends AnyFlatSpec with should.Matchers {
   "Of method" should "generate valid scan command for /scan message" in {
     val url = "test.url"
     val mockChat = Chat(id = 1, `type` = Channel)
-    val mockMessage = Message(messageId = 1, date = 1, chat = mockChat, text = Some(s"/scan $url"))
+    val mockMessage = Message(
+      messageId = 1,
+      date = 1,
+      chat = mockChat,
+      text = Some(s"/scan $url")
+    )
 
-    Messages.of(mockMessage) shouldBe(ScanArticle(url, mockChat.id))
+    Messages.of(mockMessage) shouldBe (ScanArticle(url, mockChat.id))
 
   }
 
