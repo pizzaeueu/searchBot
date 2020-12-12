@@ -1,4 +1,4 @@
-package com.search_bot.dao
+package com.search_bot.reader
 
 import cats.effect.ConcurrentEffect
 import cats.syntax.all._
@@ -10,7 +10,7 @@ trait HtmlReader[F[_]] {
 }
 
 object HtmlReader {
-  def http4sClientReader[F[_]: ConcurrentEffect](
+  def of[F[_]: ConcurrentEffect](
       client: Client[F],
       parser: HtmlParser[F]
   ): HtmlReader[F] = new HtmlReader[F] {

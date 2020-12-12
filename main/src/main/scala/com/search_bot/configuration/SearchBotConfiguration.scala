@@ -7,12 +7,11 @@ import doobie.hikari.HikariTransactor
 import doobie.{ExecutionContexts, Transactor}
 import pureconfig.ConfigSource
 import pureconfig.generic.auto._
-import doobie.implicits._
 
 object SearchBotConfiguration {
 
-  case class BotToken(botToken: String)
-  case class DatabaseConfig(
+  final case class BotToken(botToken: String)
+  final case class DatabaseConfig(
       driver: String,
       url: String,
       user: String,
@@ -22,14 +21,7 @@ object SearchBotConfiguration {
 
   def getBotToken[F[_]: Sync: MonadThrowable] = {
     Sync[F]
-      .delay(ConfigSource.default.at("bot").load[BotToken])
-      .flatMap[BotToken] {
-        case Right(value) => implicitly[MonadThrowable[F]].pure(value)
-        case Left(err) =>
-          implicitly[MonadThrowable[F]].raiseError(
-            new RuntimeException(err.prettyPrint())
-          )
-      }
+      .delay(ConfigSource.default.at("bot").loadOrThrow[BotToken])
   }
 
   def getDatabaseConfig[F[_]: Sync: MonadThrowable] = {
@@ -37,7 +29,7 @@ object SearchBotConfiguration {
       .delay(ConfigSource.default.at("db").load[DatabaseConfig])
       .flatMap[DatabaseConfig] {
         case Right(value) =>
-          implicitly[MonadThrowable[F]].pure(value) //value.pure[F]
+          implicitly[MonadThrowable[F]].pure(value)
         case Left(err) =>
           implicitly[MonadThrowable[F]].raiseError(
             new RuntimeException(err.prettyPrint())

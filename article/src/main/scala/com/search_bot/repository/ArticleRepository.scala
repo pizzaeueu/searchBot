@@ -21,7 +21,7 @@ trait ArticleRepository[F[_]] {
 
 object ArticleRepository {
 
-  def postgresRepository[F[_]: Async: MonadThrowable](
+  def of[F[_]: Async: MonadThrowable](
       transactor: Transactor[F]
   ): ArticleRepository[F] =
     new ArticleRepository[F] {

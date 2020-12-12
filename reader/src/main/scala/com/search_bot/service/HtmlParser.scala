@@ -10,7 +10,7 @@ trait HtmlParser[F[_]] {
 }
 
 object HtmlParser {
-  def htmlParser[F[_]: MonadThrowable]: HtmlParser[F] = new HtmlParser[F] {
+  def make[F[_]: MonadThrowable]: HtmlParser[F] = new HtmlParser[F] {
     override def getWords(html: String): F[List[String]] =
       implicitly[MonadThrowable[F]].fromTry(
         Try(Jsoup.parse(html).body().text().split("\\W+").distinct.toList)

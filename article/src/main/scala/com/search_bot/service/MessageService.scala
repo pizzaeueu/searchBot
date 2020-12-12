@@ -4,7 +4,7 @@ import cats.effect.Sync
 import cats.syntax.all._
 import com.bot4s.telegram.methods.SendMessage
 import com.evolutiongaming.catshelper.MonadThrowable
-import com.search_bot.dao.HtmlReader
+import com.search_bot.reader.HtmlReader
 import com.search_bot.domain.Article._
 import com.search_bot.domain.Messages.{
   CommandNotSupported,
@@ -24,16 +24,15 @@ trait MessageService[F[_]] {
 }
 
 object MessageService {
-  def messageService[F[_]: Sync: MonadThrowable](
+  def of[F[_]: Sync: MonadThrowable](
       articleRepo: ArticleRepository[F],
       articleReader: HtmlReader[F]
   ): MessageService[F] = {
     case ScanArticle(url, chatId) =>
       scanArticle(url, chatId, articleReader, articleRepo)
     case GetArticle(keyword, chatId) =>
-      getArticle(keyword, chatId, articleRepo).recoverWith {
-        case err =>
-          generateError(err, chatId.toLong)
+      getArticle(keyword, chatId, articleRepo).handleErrorWith { err =>
+        generateError(err, chatId.toLong)
       }
     case CommandNotSupported(chatId, command) =>
       implicitly[MonadThrowable[F]].pure(

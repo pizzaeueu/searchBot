@@ -8,8 +8,6 @@ ThisBuild / version := "0.0.1-SNAPSHOT"
 scalafmtOnCompile in ThisBuild := true
 scalafmtTestOnCompile in ThisBuild := true
 
-//todo add scalafmt
-
 lazy val searchBot =
   project
     .in(file("."))
@@ -66,11 +64,6 @@ lazy val commonSettings = Seq(
     Cats.effects,
     Dependencies.Test.scalaTest,
     Utils.evoCatsHelper
-  ),
-  Compile / console / scalacOptions --= Seq(
-    "-Wunused:_",
-    "-language:higherKinds",
-    "-Xfatal-warnings"
   ),
   resolvers += Resolver.bintrayRepo("evolutiongaming", "maven")
 )

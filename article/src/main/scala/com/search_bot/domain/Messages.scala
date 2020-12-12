@@ -4,14 +4,16 @@ import com.bot4s.telegram.models.Message
 
 object Messages {
 
-  sealed trait InputMessages { val command: String }
-  case class Scan(command: String) extends InputMessages
-  case class Find(command: String) extends InputMessages
+  sealed trait InputMessages { def command: String }
+  final case class Scan(command: String) extends InputMessages
+  final case class Find(command: String) extends InputMessages
 
   sealed trait TelegramMessage
-  case class ScanArticle(url: String, chatId: Long) extends TelegramMessage
-  case class GetArticle(keyword: String, chatId: Long) extends TelegramMessage
-  case class CommandNotSupported(chatId: Long, command: String)
+  final case class ScanArticle(url: String, chatId: Long)
+      extends TelegramMessage
+  final case class GetArticle(keyword: String, chatId: Long)
+      extends TelegramMessage
+  final case class CommandNotSupported(chatId: Long, command: String)
       extends TelegramMessage
 
   def of(message: Message): TelegramMessage = {

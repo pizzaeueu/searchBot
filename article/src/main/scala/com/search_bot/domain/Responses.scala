@@ -9,13 +9,13 @@ object Responses {
     val message: JsonRequest[Message]
   }
 
-  case class SuccessfullySave(message: JsonRequest[Message])
+  final case class SuccessfullySave(message: JsonRequest[Message])
       extends TelegramResponse
 
-  case class SuccessfullyRetrieve(message: JsonRequest[Message])
+  final case class SuccessfullyRetrieve(message: JsonRequest[Message])
       extends TelegramResponse
 
-  case class FailHandleMessage(message: JsonRequest[Message])
+  final case class FailHandleMessage(message: JsonRequest[Message])
       extends TelegramResponse
 
 }
