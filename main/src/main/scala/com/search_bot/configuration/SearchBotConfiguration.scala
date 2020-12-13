@@ -6,11 +6,10 @@ import com.evolutiongaming.catshelper.MonadThrowable
 import doobie.hikari.HikariTransactor
 import doobie.{ExecutionContexts, Transactor}
 import pureconfig.ConfigSource
+import com.search_bot.domain.Bot.BotToken
 import pureconfig.generic.auto._
 
 object SearchBotConfiguration {
-
-  final case class BotToken(botToken: String)
   final case class DatabaseConfig(
       driver: String,
       url: String,

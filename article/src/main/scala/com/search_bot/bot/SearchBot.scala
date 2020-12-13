@@ -5,17 +5,18 @@ import cats.syntax.all._
 import com.bot4s.telegram.cats.{Polling, TelegramBot}
 import com.bot4s.telegram.models.Message
 import com.search_bot.domain.Messages
+import com.search_bot.domain.Bot.BotToken
 import com.search_bot.service.MessageService
 import com.softwaremill.sttp.SttpBackend
 
 object SearchBot {
   def make[F[_]: Sync: ContextShift](
-      token: String,
+      token: BotToken,
       server: SttpBackend[F, Nothing],
       service: MessageService[F]
   ): Resource[F, TelegramBot[F]] = {
 
-    def create = new TelegramBot[F](token, server) with Polling[F] {
+    def create = new TelegramBot[F](token.botToken, server) with Polling[F] {
       override def receiveMessage(msg: Message): F[Unit] =
         for {
           response <- service.handle(Messages.of(msg))

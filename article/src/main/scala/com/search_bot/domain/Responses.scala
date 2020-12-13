@@ -15,7 +15,13 @@ object Responses {
   final case class SuccessfullyRetrieve(message: JsonRequest[Message])
       extends TelegramResponse
 
+  final case class ArticleNotFound(message: JsonRequest[Message])
+      extends TelegramResponse
+
   final case class FailHandleMessage(message: JsonRequest[Message])
+      extends TelegramResponse
+
+  final case class UrlIsNotValid(message: JsonRequest[Message])
       extends TelegramResponse
 
 }

@@ -31,7 +31,7 @@ object Program {
       articleRepo = ArticleRepository.of(transactor)
       messageService = MessageService.of(articleRepo, articleReader)
       server = AsyncHttpClientCatsBackend()
-      bot <- SearchBot.make(botTokenConfig.botToken, server, messageService)
+      bot <- SearchBot.make(botTokenConfig, server, messageService)
       _ <- bot.run().toResource
     } yield ()
   }
