@@ -8,8 +8,19 @@ import com.bot4s.telegram.methods.SendMessage
 import com.evolutiongaming.catshelper.{Log, MonadThrowable}
 import com.search_bot.reader.HtmlReader
 import com.search_bot.domain.Article._
-import com.search_bot.domain.Messages.{CommandNotSupported, GetArticle, ScanArticle, TelegramMessage}
-import com.search_bot.domain.Responses.{ArticleNotFound, FailHandleMessage, SuccessfullySave, TelegramResponse, UrlIsNotValid}
+import com.search_bot.domain.Messages.{
+  CommandNotSupported,
+  GetArticle,
+  ScanArticle,
+  TelegramMessage
+}
+import com.search_bot.domain.Responses.{
+  ArticleNotFound,
+  FailHandleMessage,
+  SuccessfullySave,
+  TelegramResponse,
+  UrlIsNotValid
+}
 import com.search_bot.repository.ArticleRepository
 import org.slf4j.LoggerFactory
 
@@ -31,7 +42,9 @@ object MessageService {
       message match {
         case ScanArticle(url, chatId) =>
           scanArticle(url, chatId, articleReader, articleRepo).recoverWith {
-            case _ : ConnectException => summon.pure(UrlIsNotValid(SendMessage(chatId, s"url $url is not valid")))
+            case _: ConnectException =>
+              summon.pure(
+                UrlIsNotValid(SendMessage(chatId, s"url $url is not valid")))
             case err => generateError(err, chatId.toLong)
           }
         case GetArticle(keyword, chatId) =>
@@ -77,12 +90,16 @@ object MessageService {
       article <- articleRepo
         .getByKeywordForChat(keyword, chatId)
       response <- article match {
-        case x :: _ => summon.pure(
-          SuccessfullySave(SendMessage(chatId, x.url.value))
-        )
-        case Nil => summon.pure(
-          ArticleNotFound(SendMessage(chatId, s"Article with keyword =  $keyword wasn't found"))
-        )
+        case x :: _ =>
+          summon.pure(
+            SuccessfullySave(SendMessage(chatId, x.url.value))
+          )
+        case Nil =>
+          summon.pure(
+            ArticleNotFound(
+              SendMessage(chatId,
+                          s"Article with keyword =  $keyword wasn't found"))
+          )
       }
     } yield response
 
@@ -90,8 +107,7 @@ object MessageService {
       err: Throwable,
       chatId: Long
   )(implicit logger: Log[F]): F[TelegramResponse] =
-    logger.error(
-      s"Error During message handling: chatId $chatId, err: $err") *> implicitly[
+    logger.error(s"Error During message handling: chatId $chatId, err: $err") *> implicitly[
       MonadThrowable[F]].pure(
       FailHandleMessage(
         SendMessage(

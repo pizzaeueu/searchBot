@@ -62,10 +62,12 @@ lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
     Cats.core,
     Cats.effects,
-    Dependencies.Test.scalaTest,
+    UnitTest.scalaTest,
+    UnitTest.scalaMock,
     Utils.evoCatsHelper
   ),
-  resolvers += Resolver.bintrayRepo("evolutiongaming", "maven")
+  resolvers += Resolver.bintrayRepo("evolutiongaming", "maven"),
+  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )
 
 //dockerComposeUp -useStaticPorts

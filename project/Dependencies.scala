@@ -15,8 +15,9 @@ object Dependencies {
     val softwareMill = "com.softwaremill.sttp" %% "async-http-client-backend-cats" % "1.7.2"
   }
 
-  object Test {
-    val scalaTest = "org.scalatest" %% "scalatest" % "3.2.3" % "test"
+  object UnitTest {
+    val scalaTest = "org.scalatest" %% "scalatest" % "3.2.3" % Test
+    val scalaMock = "org.scalamock" %% "scalamock" % "4.4.0" % Test
   }
 
   object Database {
