@@ -69,5 +69,3 @@ lazy val commonSettings = Seq(
   resolvers += Resolver.bintrayRepo("evolutiongaming", "maven"),
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )
-
-//dockerComposeUp -useStaticPorts
