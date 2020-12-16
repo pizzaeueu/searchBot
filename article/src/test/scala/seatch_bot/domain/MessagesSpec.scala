@@ -3,7 +3,11 @@ package seatch_bot.domain
 import com.bot4s.telegram.models.ChatType.Channel
 import com.bot4s.telegram.models.{Chat, Message}
 import com.search_bot.domain.Messages
-import com.search_bot.domain.Messages.{CommandNotSupported, GetArticle, ScanArticle}
+import com.search_bot.domain.Messages.{
+  CommandNotSupported,
+  GetArticle,
+  ScanArticle
+}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
@@ -47,7 +51,8 @@ class MessagesSpec extends AnyFlatSpec with Matchers {
       text = Some(invalidCommand)
     )
 
-    Messages.of(mockMessage) shouldBe (CommandNotSupported(mockChat.id, invalidCommand))
+    Messages.of(mockMessage) shouldBe (CommandNotSupported(mockChat.id,
+                                                           invalidCommand))
 
   }
 

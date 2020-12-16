@@ -4,7 +4,11 @@ import cats.effect.IO
 import com.bot4s.telegram.methods.SendMessage
 import com.search_bot.domain.Article.{Article, ArticleUrl, ArticleWords, ChatId}
 import com.search_bot.domain.Messages.{GetArticle, ScanArticle}
-import com.search_bot.domain.Responses.{FailHandleMessage, SuccessfullySave}
+import com.search_bot.domain.Responses.{
+  ArticleAlreadyExists,
+  FailHandleMessage,
+  SuccessfullySave
+}
 import com.search_bot.reader.HtmlReader
 import com.search_bot.repository.ArticleRepository
 import com.search_bot.service.MessageService
@@ -25,10 +29,32 @@ class MessageServiceSpec extends AnyFlatSpec with Matchers with MockFactory {
     val message = ScanArticle(url, chatId)
 
     (fakeHtmlReader.retrieveKeywords _).expects(url).returns(IO(keywords))
-    (fakeArticleRepo.saveArticle _).expects(Article(ArticleUrl(url), ChatId(chatId), ArticleWords(keywords) )).returns(IO(1))
+    (fakeArticleRepo.getByUrlForChat _).expects(url, chatId).returns(IO(None))
+    (fakeArticleRepo.saveArticle _)
+      .expects(Article(ArticleUrl(url), ChatId(chatId), ArticleWords(keywords)))
+      .returns(IO(1))
 
     val res = service.handle(message).unsafeRunSync()
-    res shouldBe(SuccessfullySave(SendMessage(chatId, "Saved")))
+    res shouldBe (SuccessfullySave(SendMessage(chatId, "Saved")))
+
+  }
+
+  "Message Service" should "show error for duplicated article" in {
+    val service = MessageService.of[IO](fakeArticleRepo, fakeHtmlReader)
+    val url = "url"
+    val chatId = 1L
+    val keywords = List("keyword")
+    val message = ScanArticle(url, chatId)
+
+    (fakeHtmlReader.retrieveKeywords _).expects(url).returns(IO(keywords))
+    (fakeArticleRepo.getByUrlForChat _)
+      .expects(url, chatId)
+      .returns(IO(
+        Some(Article(ArticleUrl(url), ChatId(chatId), ArticleWords(keywords)))))
+
+    val res = service.handle(message).unsafeRunSync()
+    res shouldBe (ArticleAlreadyExists(
+      SendMessage(chatId, "Article has already saved")))
 
   }
 
@@ -38,12 +64,17 @@ class MessageServiceSpec extends AnyFlatSpec with Matchers with MockFactory {
     val chatId = 1L
     val requestedUrl = "www.test.com"
     val message = GetArticle(keyword, chatId)
-    val articles = List(Article(ArticleUrl(requestedUrl), ChatId(chatId), ArticleWords(List(keyword))))
+    val articles = List(
+      Article(ArticleUrl(requestedUrl),
+              ChatId(chatId),
+              ArticleWords(List(keyword))))
 
-    (fakeArticleRepo.getByKeywordForChat _).expects(keyword, chatId).returns(IO(articles))
+    (fakeArticleRepo.getByKeywordForChat _)
+      .expects(keyword, chatId)
+      .returns(IO(articles))
 
     val res = service.handle(message).unsafeRunSync()
-    res shouldBe(SuccessfullySave(SendMessage(chatId, requestedUrl)))
+    res shouldBe (SuccessfullySave(SendMessage(chatId, requestedUrl)))
 
   }
 
@@ -54,7 +85,9 @@ class MessageServiceSpec extends AnyFlatSpec with Matchers with MockFactory {
     val err = new RuntimeException("Test Error")
     val message = GetArticle(keyword, chatId)
 
-    (fakeArticleRepo.getByKeywordForChat _).expects(keyword, chatId).returns(IO.raiseError(err))
+    (fakeArticleRepo.getByKeywordForChat _)
+      .expects(keyword, chatId)
+      .returns(IO.raiseError(err))
 
     val res = service.handle(message).unsafeRunSync()
     res shouldBe FailHandleMessage(
