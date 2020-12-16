@@ -24,4 +24,7 @@ object Responses {
   final case class UrlIsNotValid(message: JsonRequest[Message])
       extends TelegramResponse
 
+  final case class ArticleAlreadyExists(message: JsonRequest[Message])
+      extends TelegramResponse
+
 }

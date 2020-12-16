@@ -13,6 +13,8 @@ trait ArticleRepository[F[_]] {
 
   def saveArticle(article: Article): F[Int]
 
+  def getByUrlForChat(url: String, chatId: Long): F[Option[Article]]
+
 }
 
 object ArticleRepository {
@@ -31,6 +33,10 @@ object ArticleRepository {
 
       override def saveArticle(article: Article): F[Int] =
         Queries.insertArticle(article).transact(transactor)
+
+      override def getByUrlForChat(url: String,
+                                   chatId: Long): F[Option[Article]] =
+        Queries.getByUrlForChat(url, chatId).transact(transactor)
     }
 
   object Queries {
@@ -43,6 +49,12 @@ object ArticleRepository {
 
     def insertArticle(article: Article) = {
       sql"insert into articles (url, chatid, words) VALUES (${article.url}, ${article.chatId}, ${article.words});".update.run
+    }
+
+    def getByUrlForChat(url: String, chatId: Long) = {
+      sql"SELECT url, chatId, words FROM articles WHERE url = $url and chatId=$chatId"
+        .query[Article]
+        .option
     }
   }
 

@@ -15,6 +15,7 @@ import com.search_bot.domain.Messages.{
   TelegramMessage
 }
 import com.search_bot.domain.Responses.{
+  ArticleAlreadyExists,
   ArticleNotFound,
   FailHandleMessage,
   SuccessfullySave,
@@ -30,8 +31,6 @@ trait MessageService[F[_]] {
 
 object MessageService {
 
-  private def summon[F[_]: MonadThrowable] = implicitly[MonadThrowable[F]]
-
   def of[F[_]: Sync: MonadThrowable](
       articleRepo: ArticleRepository[F],
       articleReader: HtmlReader[F]
@@ -43,7 +42,7 @@ object MessageService {
         case ScanArticle(url, chatId) =>
           scanArticle(url, chatId, articleReader, articleRepo).recoverWith {
             case _: ConnectException =>
-              summon.pure(
+              MonadThrowable.summon.pure(
                 UrlIsNotValid(SendMessage(chatId, s"url $url is not valid")))
             case err => generateError(err, chatId.toLong)
           }
@@ -52,7 +51,7 @@ object MessageService {
             generateError(err, chatId.toLong)
           }
         case CommandNotSupported(chatId, command) =>
-          summon.pure(
+          MonadThrowable.summon.pure(
             FailHandleMessage(
               SendMessage(chatId, s"command $command not supported")
             )
@@ -66,20 +65,25 @@ object MessageService {
       chatId: Long,
       reader: HtmlReader[F],
       articleRepo: ArticleRepository[F]
-  ): F[TelegramResponse] = {
-    println("*" * 120)
-    val out: F[TelegramResponse] = for {
+  ): F[TelegramResponse] =
+    for {
       keywords <- reader.retrieveKeywords(url)
       article = Article(
         ArticleUrl(url),
         ChatId(chatId),
         ArticleWords(keywords)
       )
-      _ <- articleRepo.saveArticle(article)
-    } yield SuccessfullySave(SendMessage(chatId, "Saved"))
-
-    out
-  }
+      existed <- articleRepo.getByUrlForChat(url, chatId)
+      message <- existed match {
+        case Some(_) =>
+          MonadThrowable.summon.pure(
+            ArticleAlreadyExists(
+              SendMessage(chatId, "Article has already saved")))
+        case None =>
+          articleRepo.saveArticle(article) *> MonadThrowable.summon.pure(
+            SuccessfullySave(SendMessage(chatId, "Saved")))
+      }
+    } yield message
 
   private def getArticle[F[_]: MonadThrowable](
       keyword: String,
@@ -90,12 +94,13 @@ object MessageService {
       article <- articleRepo
         .getByKeywordForChat(keyword, chatId)
       response <- article match {
-        case x :: _ =>
-          summon.pure(
-            SuccessfullySave(SendMessage(chatId, x.url.value))
+        case articles if articles.nonEmpty =>
+          val urls = articles.map(_.url.value).reduce(_ + "\n" + _)
+          MonadThrowable.summon.pure(
+            SuccessfullySave(SendMessage(chatId, urls))
           )
-        case Nil =>
-          summon.pure(
+        case _ =>
+          MonadThrowable.summon.pure(
             ArticleNotFound(
               SendMessage(chatId,
                           s"Article with keyword =  $keyword wasn't found"))
@@ -107,14 +112,14 @@ object MessageService {
       err: Throwable,
       chatId: Long
   )(implicit logger: Log[F]): F[TelegramResponse] =
-    logger.error(s"Error During message handling: chatId $chatId, err: $err") *> implicitly[
-      MonadThrowable[F]].pure(
-      FailHandleMessage(
-        SendMessage(
-          chatId,
-          s"Unexpected Error during process. Please contact owner for details. Error Message - ${err.getMessage}"
+    logger.error(s"Error During message handling: chatId $chatId, err: $err") *> MonadThrowable.summon
+      .pure(
+        FailHandleMessage(
+          SendMessage(
+            chatId,
+            s"Unexpected Error during process. Please contact owner for details. Error Message - ${err.getMessage}"
+          )
         )
       )
-    )
 
 }

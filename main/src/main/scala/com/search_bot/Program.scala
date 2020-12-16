@@ -4,7 +4,7 @@ import cats.effect.{Async, ConcurrentEffect, ContextShift, Resource}
 import com.evolutiongaming.catshelper.CatsHelper._
 import com.evolutiongaming.catshelper.MonadThrowable
 import com.search_bot.bot.SearchBot
-import com.search_bot.configuration.SearchBotConfiguration
+import com.search_bot.configuration.{DBConfiguration, SearchBotConfiguration}
 import com.search_bot.configuration.SearchBotConfiguration.DatabaseConfig
 import com.search_bot.domain.Bot.BotToken
 import com.search_bot.reader.HtmlReader
@@ -41,7 +41,7 @@ object Program {
   def loadRepos[F[_]: Async: ContextShift: ConcurrentEffect: MonadThrowable](
       config: DatabaseConfig): Resource[F, ArticleRepository[F]] =
     for {
-      transactor <- SearchBotConfiguration.getDbConnectionResource(
+      transactor <- DBConfiguration.getDbConnectionResource(
         config
       )
       articleRepo = ArticleRepository.of(transactor)
