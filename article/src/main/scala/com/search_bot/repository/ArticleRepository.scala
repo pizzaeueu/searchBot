@@ -1,6 +1,7 @@
 package com.search_bot.repository
 
 import cats.effect.Async
+import cats.effect.concurrent.Ref
 import com.evolutiongaming.catshelper.MonadThrowable
 import com.search_bot.domain.Article.Article
 import doobie.{LogHandler, Transactor}
@@ -37,25 +38,50 @@ object ArticleRepository {
       override def getByUrlForChat(url: String,
                                    chatId: Long): F[Option[Article]] =
         Queries.getByUrlForChat(url, chatId).transact(transactor)
+
+      object Queries {
+
+        def getByKeywordForChat(searchWord: String, chatId: Long) = {
+          sql"SELECT url, chatId, words FROM articles WHERE words @> ARRAY[$searchWord]::varchar[] AND chatId = $chatId"
+            .query[Article]
+            .to[List]
+        }
+
+        def insertArticle(article: Article) = {
+          sql"insert into articles (url, chatid, words) VALUES (${article.url}, ${article.chatId}, ${article.words});".update.run
+        }
+
+        def getByUrlForChat(url: String, chatId: Long) = {
+          sql"SELECT url, chatId, words FROM articles WHERE url = $url and chatId=$chatId"
+            .query[Article]
+            .option
+        }
+      }
     }
 
-  object Queries {
+  def inMemoryOf[F[_]: Async: MonadThrowable](state: Ref[F, Vector[Article]]) =
+    new ArticleRepository[F] {
+      import cats.syntax.all._
 
-    def getByKeywordForChat(searchWord: String, chatId: Long) = {
-      sql"SELECT url, chatId, words FROM articles WHERE words @> ARRAY[$searchWord]::varchar[] AND chatId = $chatId"
-        .query[Article]
-        .to[List]
-    }
+      override def getByKeywordForChat(word: String,
+                                       chatId: Long): F[List[Article]] =
+        state.get.map { articles =>
+          articles
+            .filter(article => article.words.value.contains(word))
+            .filter(article => article.chatId.value == chatId)
+            .toList
+        }
 
-    def insertArticle(article: Article) = {
-      sql"insert into articles (url, chatid, words) VALUES (${article.url}, ${article.chatId}, ${article.words});".update.run
-    }
+      override def saveArticle(article: Article): F[Int] =
+        state.modify(articles => (articles :+ article) -> 1)
 
-    def getByUrlForChat(url: String, chatId: Long) = {
-      sql"SELECT url, chatId, words FROM articles WHERE url = $url and chatId=$chatId"
-        .query[Article]
-        .option
+      override def getByUrlForChat(url: String,
+                                   chatId: Long): F[Option[Article]] =
+        state.get.map { articles =>
+          articles
+            .filter(article => article.chatId.value == chatId)
+            .find(article => article.url.value == url)
+        }
     }
-  }
 
 }

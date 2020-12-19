@@ -1,7 +1,7 @@
 # Searcher Bot [![Build Status](https://travis-ci.com/SamosadovArtem/searchBot.svg?token=qnvcRrUMF2GcwbChxqya&branch=master)](https://travis-ci.com/github/SamosadovArtem/searchBot) [![Coverage Status](https://coveralls.io/repos/github/SamosadovArtem/searchBot/badge.svg?branch=master)](https://coveralls.io/github/SamosadovArtem/searchBot?branch=master)
 Telegram bot which helps you to find articles by keywords
 
-#How to run
+# How to run
 - Presentation mode
 
 The simplest way to run search bot is running [docker-compose](https://github.com/SamosadovArtem/searchBot/blob/master/docker/docker-compose.yml) 
@@ -13,8 +13,10 @@ In order to do it you can use either `docker compose up` or `sbt dockerComposeUp
 
 If you want to run bot locally you need to update [application.conf](https://github.com/SamosadovArtem/searchBot/blob/master/main/src/main/resources/application.conf)
 with your db config data and run it with `sbt run` command
+It also possible to run application without db connection. In order to do it use `sbt "run inMemory"` command
 
-#How to use
+
+# How to use
 
 Search Bot has 2 command:
 - `/scan {url}`
