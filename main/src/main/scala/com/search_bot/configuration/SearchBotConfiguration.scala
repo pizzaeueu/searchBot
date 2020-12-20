@@ -18,7 +18,7 @@ object SearchBotConfiguration {
 
   def getBotToken[F[_]: Sync: MonadThrowable] = {
     Sync[F]
-      .delay(ConfigSource.default.at("bot").loadOrThrow[BotToken])
+      .delay(ConfigSource.default.at("bot-token").loadOrThrow[BotToken])
   }
 
   def getDatabaseConfig[F[_]: Sync: MonadThrowable] = {
