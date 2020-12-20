@@ -12,7 +12,7 @@ In order to do it you can use either `docker compose up` or `sbt dockerComposeUp
 - Development mode
 
 If you want to run bot locally you need to update [application.conf](https://github.com/SamosadovArtem/searchBot/blob/master/main/src/main/resources/application.conf)
-with your db config data and run it with `sbt run` command
+with your db config data / bot token and run it with `sbt run` command
 
 - Development mode (In memory DB)
 
