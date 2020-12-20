@@ -8,7 +8,7 @@ import com.search_bot.bot.SearchBot
 import com.search_bot.configuration.{DBConfiguration, SearchBotConfiguration}
 import com.search_bot.configuration.SearchBotConfiguration.DatabaseConfig
 import com.search_bot.domain.Article.Article
-import com.search_bot.domain.Bot.BotToken
+import com.search_bot.domain.BotToken
 import com.search_bot.reader.HtmlReader
 import com.search_bot.repository.ArticleRepository
 import com.search_bot.service.{HtmlParser, MessageService}
@@ -23,25 +23,25 @@ object Program {
       inMemory: Boolean)(implicit
                          ec: ExecutionContext): Resource[F, Unit] = {
     for {
-      (botTokenConfig, databaseConfig) <- loadConf()
+      (botTokenConfig, databaseConfig) <- makeConf()
       _ = println(inMemory)
-      articleRepo <- if (inMemory) loadInMemoryRepo()
-      else loadRepos(databaseConfig)
-      messageService <- loadServices(articleRepo)
+      articleRepo <- if (inMemory) makeInMemoryRepos()
+      else makeRepos(databaseConfig)
+      messageService <- makeServices(articleRepo)
       server = AsyncHttpClientCatsBackend()
       bot <- SearchBot.make(botTokenConfig, server, messageService)
       _ <- bot.run().toResource
     } yield ()
   }
 
-  def loadConf[F[_]: Async: MonadThrowable]()
+  def makeConf[F[_]: Async: MonadThrowable]()
     : Resource[F, (BotToken, SearchBotConfiguration.DatabaseConfig)] =
     for {
       botTokenConfig <- SearchBotConfiguration.getBotToken.toResource
       databaseConfig <- SearchBotConfiguration.getDatabaseConfig.toResource
     } yield (botTokenConfig, databaseConfig)
 
-  def loadRepos[F[_]: Async: ContextShift: ConcurrentEffect: MonadThrowable](
+  def makeRepos[F[_]: Async: ContextShift: ConcurrentEffect: MonadThrowable](
       config: DatabaseConfig): Resource[F, ArticleRepository[F]] =
     for {
       _ <- db.Configuration.migrate(config).toResource
@@ -51,13 +51,13 @@ object Program {
       articleRepo = ArticleRepository.of(transactor)
     } yield articleRepo
 
-  def loadInMemoryRepo[
+  def makeInMemoryRepos[
       F[_]: Async: ContextShift: ConcurrentEffect: MonadThrowable]() =
     for {
       ref <- Ref.of[F, Vector[Article]](Vector()).toResource
-    } yield ArticleRepository.inMemoryOf(ref)
+    } yield ArticleRepository.inMemory(ref)
 
-  def loadServices[F[_]: Async: ContextShift: ConcurrentEffect: MonadThrowable](
+  def makeServices[F[_]: Async: ContextShift: ConcurrentEffect: MonadThrowable](
       articleRepository: ArticleRepository[F])(
       implicit ec: ExecutionContext): Resource[F, MessageService[F]] =
     for {

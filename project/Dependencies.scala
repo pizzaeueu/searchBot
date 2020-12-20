@@ -18,6 +18,7 @@ object Dependencies {
   object UnitTest {
     val scalaTest = "org.scalatest" %% "scalatest" % "3.2.3" % Test
     val scalaMock = "org.scalamock" %% "scalamock" % "4.4.0" % Test
+    val catsHelperTestKil = "com.evolutiongaming" %% "cats-helper-testkit" % "2.1.3"
   }
 
   object Database {

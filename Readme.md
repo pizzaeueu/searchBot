@@ -13,7 +13,15 @@ In order to do it you can use either `docker compose up` or `sbt dockerComposeUp
 
 If you want to run bot locally you need to update [application.conf](https://github.com/SamosadovArtem/searchBot/blob/master/main/src/main/resources/application.conf)
 with your db config data and run it with `sbt run` command
-It also possible to run application without db connection. In order to do it use `sbt "run inMemory"` command
+
+- Development mode (In memory DB)
+
+It also possible to start application without db connection. 
+In order to use this mode run `sbt "run inMemory"` command.
+
+_warning: with `In Memory` mode your data will be available as long as your app is working._ 
+
+
 
 
 # How to use

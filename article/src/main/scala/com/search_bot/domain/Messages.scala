@@ -1,5 +1,5 @@
 package com.search_bot.domain
-import cats.implicits._
+import cats.implicits.{catsSyntaxOptionId, none}
 import com.bot4s.telegram.models.Message
 
 object Messages {

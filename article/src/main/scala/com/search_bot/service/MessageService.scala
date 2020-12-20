@@ -8,20 +8,8 @@ import com.bot4s.telegram.methods.SendMessage
 import com.evolutiongaming.catshelper.{Log, MonadThrowable}
 import com.search_bot.reader.HtmlReader
 import com.search_bot.domain.Article._
-import com.search_bot.domain.Messages.{
-  CommandNotSupported,
-  GetArticle,
-  ScanArticle,
-  TelegramMessage
-}
-import com.search_bot.domain.Responses.{
-  ArticleAlreadyExists,
-  ArticleNotFound,
-  FailHandleMessage,
-  SuccessfullySave,
-  TelegramResponse,
-  UrlIsNotValid
-}
+import com.search_bot.domain.Messages.{CommandNotSupported, GetArticle, ScanArticle, TelegramMessage}
+import com.search_bot.domain.Responses.{ArticleAlreadyExists, ArticleNotFound, FailHandleMessage, SuccessfullySave, TelegramResponse, UrlIsNotValid}
 import com.search_bot.repository.ArticleRepository
 import org.slf4j.LoggerFactory
 
@@ -42,8 +30,8 @@ object MessageService {
         case ScanArticle(url, chatId) =>
           scanArticle(url, chatId, articleReader, articleRepo).recoverWith {
             case _: ConnectException =>
-              MonadThrowable.summon.pure(
-                UrlIsNotValid(SendMessage(chatId, s"url $url is not valid")))
+                val notValidUrlResponse: TelegramResponse = UrlIsNotValid(SendMessage(chatId, s"url $url is not valid"))
+                notValidUrlResponse.pure[F]
             case err => generateError(err, chatId.toLong)
           }
         case GetArticle(keyword, chatId) =>
@@ -51,11 +39,10 @@ object MessageService {
             generateError(err, chatId.toLong)
           }
         case CommandNotSupported(chatId, command) =>
-          MonadThrowable.summon.pure(
-            FailHandleMessage(
+            val failResponse: TelegramResponse = FailHandleMessage(
               SendMessage(chatId, s"command $command not supported")
             )
-          )
+          failResponse.pure[F]
       }
     }
   }
@@ -96,15 +83,11 @@ object MessageService {
       response <- article match {
         case articles if articles.nonEmpty =>
           val urls = articles.map(_.url.value).reduce(_ + "\n" + _)
-          MonadThrowable.summon.pure(
-            SuccessfullySave(SendMessage(chatId, urls))
-          )
+            SuccessfullySave(SendMessage(chatId, urls)).pure[F]
         case _ =>
-          MonadThrowable.summon.pure(
             ArticleNotFound(
               SendMessage(chatId,
-                          s"Article with keyword =  $keyword wasn't found"))
-          )
+                          s"Article with keyword =  $keyword wasn't found")).pure[F]
       }
     } yield response
 

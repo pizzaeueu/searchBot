@@ -59,7 +59,7 @@ object ArticleRepository {
       }
     }
 
-  def inMemoryOf[F[_]: Async: MonadThrowable](state: Ref[F, Vector[Article]]) =
+  def inMemory[F[_]: Async: MonadThrowable](state: Ref[F, Vector[Article]]) =
     new ArticleRepository[F] {
       import cats.syntax.all._
 

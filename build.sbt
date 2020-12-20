@@ -64,6 +64,7 @@ lazy val commonSettings = Seq(
     Cats.effects,
     UnitTest.scalaTest,
     UnitTest.scalaMock,
+    UnitTest.catsHelperTestKil,
     Utils.evoCatsHelper
   ),
   resolvers += Resolver.bintrayRepo("evolutiongaming", "maven"),

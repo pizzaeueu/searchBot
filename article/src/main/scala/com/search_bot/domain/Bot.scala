@@ -1,5 +1,3 @@
 package com.search_bot.domain
 
-object Bot {
-  case class BotToken(botToken: String)
-}
+  final case class BotToken(botToken: String) extends AnyVal

@@ -4,7 +4,7 @@ import cats.effect.Sync
 import cats.syntax.all._
 import com.evolutiongaming.catshelper.MonadThrowable
 import pureconfig.ConfigSource
-import com.search_bot.domain.Bot.BotToken
+import com.search_bot.domain.BotToken
 import pureconfig.generic.auto._
 
 object SearchBotConfiguration {
@@ -26,7 +26,7 @@ object SearchBotConfiguration {
       .delay(ConfigSource.default.at("db").load[DatabaseConfig])
       .flatMap[DatabaseConfig] {
         case Right(value) =>
-          MonadThrowable.summon.pure(value)
+          value.pure[F]
         case Left(err) =>
           MonadThrowable.summon.raiseError(
             new RuntimeException(err.prettyPrint())

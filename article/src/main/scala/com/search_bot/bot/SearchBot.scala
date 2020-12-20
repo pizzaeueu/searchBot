@@ -4,8 +4,7 @@ import cats.effect.{ContextShift, Resource, Sync}
 import cats.syntax.all._
 import com.bot4s.telegram.cats.{Polling, TelegramBot}
 import com.bot4s.telegram.models.Message
-import com.search_bot.domain.Messages
-import com.search_bot.domain.Bot.BotToken
+import com.search_bot.domain.{BotToken, Messages}
 import com.search_bot.service.MessageService
 import com.softwaremill.sttp.SttpBackend
 
