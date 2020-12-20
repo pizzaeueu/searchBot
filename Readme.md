@@ -1,4 +1,7 @@
-# Searcher Bot [![Build Status](https://travis-ci.com/SamosadovArtem/searchBot.svg?token=qnvcRrUMF2GcwbChxqya&branch=master)](https://travis-ci.com/github/SamosadovArtem/searchBot) [![Coverage Status](https://coveralls.io/repos/github/SamosadovArtem/searchBot/badge.svg?branch=master)](https://coveralls.io/github/SamosadovArtem/searchBot?branch=master)
+# Searcher Bot 
+[![Build Status](https://travis-ci.com/SamosadovArtem/searchBot.svg?token=qnvcRrUMF2GcwbChxqya&branch=master)](https://travis-ci.com/github/SamosadovArtem/searchBot) 
+[![Coverage Status](https://coveralls.io/repos/github/SamosadovArtem/searchBot/badge.svg?branch=master)](https://coveralls.io/github/SamosadovArtem/searchBot?branch=master)
+
 Telegram bot which helps you to find articles by keywords
 
 # How to run
@@ -26,17 +29,20 @@ _warning: with `In Memory` mode your data will be available as long as your app 
 
 # How to use
 
-Search Bot has 2 command:
+Search Bot supports 3 commands:
 - `/scan {url}`
 - `/find {keyword}`
+- `/help` or `/start`
 
 Scan command will retrieve keywords from the provided url and save article.
-In order to find article you need to call Find command with needed keyword.
+In order to find article you need to call Find command with a needed keyword.
 e.g.
 
 `/scan https://docs.scala-lang.org/`
 
 `/find scala`
+
+You can use either `/start` or `/help` command in order to see the list of available commands
 
  
 

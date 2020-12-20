@@ -5,8 +5,9 @@ enablePlugins(DockerComposePlugin)
 ThisBuild / organization := "com.search_bot"
 ThisBuild / scalaVersion := "2.12.9"
 ThisBuild / version := "0.0.1-SNAPSHOT"
-scalafmtOnCompile in ThisBuild := true
-scalafmtTestOnCompile in ThisBuild := true
+ThisBuild / scalafmtOnCompile := true
+ThisBuild / scalafmtTestOnCompile := true
+ThisBuild / resolvers += Resolver.bintrayRepo("evolutiongaming", "maven")
 
 lazy val searchBot =
   project
@@ -23,9 +24,11 @@ lazy val main =
     .in(file("main"))
     .settings(commonSettings)
     .dependsOn(article)
+    .dependsOn(reader)
     .settings(
       libraryDependencies ++= Seq(
-        Database.flywayCore
+        Database.flywayCore,
+        Config.pureConfig
       )
     )
 
@@ -37,7 +40,6 @@ lazy val article =
       libraryDependencies ++= Seq(
         Telegram.bot4s,
         Sttp.softwareMill,
-        Config.pureConfig,
         Database.doobie,
         Database.doobiePostgres,
         Database.doobieHikari,
@@ -67,6 +69,5 @@ lazy val commonSettings = Seq(
     UnitTest.catsHelperTestKil,
     Utils.evoCatsHelper
   ),
-  resolvers += Resolver.bintrayRepo("evolutiongaming", "maven"),
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )

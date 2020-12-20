@@ -11,12 +11,15 @@ import com.search_bot.domain.Article._
 import com.search_bot.domain.Messages.{
   CommandNotSupported,
   GetArticle,
+  GetCommandsList,
   ScanArticle,
   TelegramMessage
 }
+import com.search_bot.domain.Responses
 import com.search_bot.domain.Responses.{
   ArticleAlreadyExists,
   ArticleNotFound,
+  CommandsList,
   FailHandleMessage,
   SuccessfullySave,
   TelegramResponse,
@@ -35,7 +38,8 @@ object MessageService {
       articleRepo: ArticleRepository[F],
       articleReader: HtmlReader[F]
   ): MessageService[F] = new MessageService[F] {
-    implicit val logger = Log[F](LoggerFactory.getLogger("MessageService"))
+    implicit val logger: Log[F] =
+      Log[F](LoggerFactory.getLogger("MessageService"))
 
     override def handle(message: TelegramMessage): F[TelegramResponse] = {
       message match {
@@ -51,6 +55,10 @@ object MessageService {
           getArticle(keyword, chatId, articleRepo).handleErrorWith { err =>
             generateError(err, chatId.toLong)
           }
+        case GetCommandsList(chatId) =>
+          val commandsListResponse: TelegramResponse = CommandsList(
+            SendMessage(chatId, Responses.CommandListResponse))
+          commandsListResponse.pure[F]
         case CommandNotSupported(chatId, command) =>
           val failResponse: TelegramResponse = FailHandleMessage(
             SendMessage(chatId, s"command $command not supported")
