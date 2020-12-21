@@ -24,7 +24,6 @@ object Program {
                          ec: ExecutionContext): Resource[F, Unit] = {
     for {
       (botTokenConfig, databaseConfig) <- makeConf()
-      _ = println(inMemory)
       articleRepo <- if (inMemory) makeInMemoryRepos()
       else makeRepos(databaseConfig)
       messageService <- makeServices(articleRepo)
@@ -51,13 +50,12 @@ object Program {
       articleRepo = ArticleRepository.of(transactor)
     } yield articleRepo
 
-  def makeInMemoryRepos[
-      F[_]: Async: ContextShift: ConcurrentEffect: MonadThrowable]() =
+  def makeInMemoryRepos[F[_]: Async]() =
     for {
       ref <- Ref.of[F, Vector[Article]](Vector()).toResource
     } yield ArticleRepository.inMemory(ref)
 
-  def makeServices[F[_]: Async: ContextShift: ConcurrentEffect: MonadThrowable](
+  def makeServices[F[_]: ConcurrentEffect](
       articleRepository: ArticleRepository[F])(
       implicit ec: ExecutionContext): Resource[F, MessageService[F]] =
     for {
