@@ -1,13 +1,9 @@
 # Project exclude paths
-/controller/target/
-/controller/target/scala-2.12/classes/
-/domain/target/
-/main/target/
-/main/target/scala-2.12/classes/
-/persistence/target/
-/persistence/target/scala-2.12/classes/
-/project/project/target/
-/project/target/
-/target/
 /.idea/
 /.bsp/
+.bloop/
+/.metals/
+target/
+/.vscode/
+/project/project/
+/project/metals.sbt

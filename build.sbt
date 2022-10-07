@@ -3,11 +3,10 @@ import Dependencies._
 enablePlugins(DockerComposePlugin)
 
 ThisBuild / organization := "com.search_bot"
-ThisBuild / scalaVersion := "2.12.9"
+ThisBuild / scalaVersion := "2.13.7"
 ThisBuild / version := "0.0.1-SNAPSHOT"
 ThisBuild / scalafmtOnCompile := true
 ThisBuild / scalafmtTestOnCompile := true
-ThisBuild / resolvers += Resolver.bintrayRepo("evolutiongaming", "maven")
 
 lazy val searchBot =
   project
