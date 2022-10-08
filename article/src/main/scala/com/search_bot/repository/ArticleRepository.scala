@@ -1,8 +1,7 @@
 package com.search_bot.repository
 
 import cats.effect.Async
-import cats.effect.concurrent.Ref
-import com.evolutiongaming.catshelper.MonadThrowable
+import cats.effect.Ref
 import com.search_bot.domain.Article.Article
 import doobie.{LogHandler, Transactor}
 import doobie.implicits._
@@ -21,7 +20,7 @@ trait ArticleRepository[F[_]] {
 object ArticleRepository {
   implicit val logger = LogHandler.jdkLogHandler
 
-  def of[F[_]: Async: MonadThrowable](
+  def of[F[_]: Async](
       transactor: Transactor[F]
   ): ArticleRepository[F] =
     new ArticleRepository[F] {
@@ -59,7 +58,7 @@ object ArticleRepository {
       }
     }
 
-  def inMemory[F[_]: Async: MonadThrowable](state: Ref[F, Vector[Article]]) =
+  def inMemory[F[_]: Async](state: Ref[F, Vector[Article]]) =
     new ArticleRepository[F] {
       import cats.syntax.all._
 

@@ -12,7 +12,7 @@ object Dependencies {
   }
 
   object Sttp {
-    val softwareMill = "com.softwaremill.sttp" %% "async-http-client-backend-cats" % "1.7.2"
+    val softwareMill = "com.softwaremill.sttp.client3" %% "async-http-client-backend-cats" % "3.8.2"
   }
 
   object UnitTest {
@@ -22,7 +22,7 @@ object Dependencies {
   }
 
   object Database {
-    val doobieVersion = "0.9.0"
+    val doobieVersion = "1.0.0-M1"
     val doobie = "org.tpolecat" %% "doobie-core" % doobieVersion
     val doobiePostgres = "org.tpolecat" %% "doobie-postgres"  % doobieVersion
     val doobieHikari = "org.tpolecat" %% "doobie-hikari" % doobieVersion
@@ -40,12 +40,12 @@ object Dependencies {
   object Http4s {
    val http4sVersion = "0.23.9"
    val dsl =  "org.http4s" %% "http4s-dsl" % http4sVersion
-   val client = "org.http4s" %% "http4s-blaze-client" % http4sVersion
+   val client = "org.http4s" %% "http4s-blaze-client" % "0.23.9"
   }
 
   object Utils {
     val jsoup = "org.jsoup" % "jsoup" % "1.13.1"
-    val evoCatsHelper = "com.evolutiongaming" %% "cats-helper" % "2.8.0"
+    val evoCatsHelper = "com.evolutiongaming" %% "cats-helper" % "3.2.0"
   }
 
 

@@ -34,7 +34,7 @@ trait MessageService[F[_]] {
 
 object MessageService {
 
-  def of[F[_]: Sync: MonadThrowable](
+  def of[F[_]: Sync](
       articleRepo: ArticleRepository[F],
       articleReader: HtmlReader[F]
   ): MessageService[F] = new MessageService[F] {
@@ -68,7 +68,7 @@ object MessageService {
     }
   }
 
-  private def scanArticle[F[_]: Sync: MonadThrowable](
+  private def scanArticle[F[_]: Sync](
       url: String,
       chatId: Long,
       reader: HtmlReader[F],
@@ -84,7 +84,7 @@ object MessageService {
       existed <- articleRepo.getByUrlForChat(url, chatId)
       message <- existed match {
         case Some(_) =>
-          MonadThrowable.summon.pure(
+          Sync[F].pure(
             ArticleAlreadyExists(
               SendMessage(chatId, "Article has already saved")))
         case None =>
@@ -113,18 +113,18 @@ object MessageService {
       }
     } yield response
 
-  private def generateError[F[_]: MonadThrowable: Sync](
+  private def generateError[F[_]: Sync](
       err: Throwable,
       chatId: Long
   )(implicit logger: Log[F]): F[TelegramResponse] =
-    logger.error(s"Error During message handling: chatId $chatId, err: $err") *> MonadThrowable.summon
-      .pure(
-        FailHandleMessage(
-          SendMessage(
-            chatId,
-            s"Unexpected Error during process. Please contact owner for details. Error Message - ${err.getMessage}"
-          )
+    logger.error(s"Error During message handling: chatId $chatId, err: $err") *> Sync[
+      F].pure {
+      FailHandleMessage(
+        SendMessage(
+          chatId,
+          s"Unexpected Error during process. Please contact owner for details. Error Message - ${err.getMessage}"
         )
       )
+    }
 
 }

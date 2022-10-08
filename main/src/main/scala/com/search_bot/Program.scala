@@ -1,9 +1,7 @@
 package com.search_bot
 
-import cats.effect.concurrent.Ref
-import cats.effect.{Async, ConcurrentEffect, ContextShift, Resource}
-import com.evolutiongaming.catshelper.CatsHelper._
-import com.evolutiongaming.catshelper.MonadThrowable
+import cats.effect.Ref
+import cats.effect.{Async, Resource}
 import com.search_bot.bot.SearchBot
 import com.search_bot.configuration.{DBConfiguration, SearchBotConfiguration}
 import com.search_bot.configuration.SearchBotConfiguration.DatabaseConfig
@@ -12,38 +10,33 @@ import com.search_bot.domain.BotToken
 import com.search_bot.reader.HtmlReader
 import com.search_bot.repository.ArticleRepository
 import com.search_bot.service.{HtmlParser, MessageService}
-import com.softwaremill.sttp.asynchttpclient.cats.AsyncHttpClientCatsBackend
-import org.http4s.client.blaze.BlazeClientBuilder
-
-import scala.concurrent.ExecutionContext
+import sttp.client3.asynchttpclient.cats.AsyncHttpClientCatsBackend
+import org.http4s.blaze.client.BlazeClientBuilder
 
 object Program {
-
-  def dsl[F[_]: Async: ContextShift: ConcurrentEffect: MonadThrowable](
-      inMemory: Boolean)(implicit
-                         ec: ExecutionContext): Resource[F, Unit] = {
+  def dsl[F[_]: Async](inMemory: Boolean): Resource[F, Unit] = {
     for {
       (botTokenConfig, databaseConfig) <- makeConf()
       articleRepo <- if (inMemory) makeInMemoryRepos()
       else makeRepos(databaseConfig)
       messageService <- makeServices(articleRepo)
-      server = AsyncHttpClientCatsBackend()
+      server <- Resource.eval(AsyncHttpClientCatsBackend[F]())
       bot <- SearchBot.make(botTokenConfig, server, messageService)
-      _ <- bot.run().toResource
+      _ <- Resource.eval(bot.run())
     } yield ()
   }
 
-  def makeConf[F[_]: Async: MonadThrowable]()
+  def makeConf[F[_]: Async]()
     : Resource[F, (BotToken, SearchBotConfiguration.DatabaseConfig)] =
     for {
-      botTokenConfig <- SearchBotConfiguration.getBotToken.toResource
-      databaseConfig <- SearchBotConfiguration.getDatabaseConfig.toResource
+      botTokenConfig <- Resource.eval(SearchBotConfiguration.getBotToken)
+      databaseConfig <- Resource.eval(SearchBotConfiguration.getDatabaseConfig)
     } yield (botTokenConfig, databaseConfig)
 
-  def makeRepos[F[_]: Async: ContextShift: ConcurrentEffect: MonadThrowable](
+  def makeRepos[F[_]: Async](
       config: DatabaseConfig): Resource[F, ArticleRepository[F]] =
     for {
-      _ <- db.Configuration.migrate(config).toResource
+      _ <- Resource.eval(db.Configuration.migrate(config))
       transactor <- DBConfiguration.getDbConnectionResource(
         config
       )
@@ -52,14 +45,13 @@ object Program {
 
   def makeInMemoryRepos[F[_]: Async]() =
     for {
-      ref <- Ref.of[F, Vector[Article]](Vector()).toResource
+      ref <- Resource.eval(Ref.of[F, Vector[Article]](Vector()))
     } yield ArticleRepository.inMemory(ref)
 
-  def makeServices[F[_]: ConcurrentEffect](
-      articleRepository: ArticleRepository[F])(
-      implicit ec: ExecutionContext): Resource[F, MessageService[F]] =
+  def makeServices[F[_]: Async](
+      articleRepository: ArticleRepository[F]): Resource[F, MessageService[F]] =
     for {
-      clientResource <- BlazeClientBuilder[F](ec).resource
+      clientResource <- BlazeClientBuilder[F].resource
       parser = HtmlParser.make
       articleReader = HtmlReader.of(clientResource, parser)
       messageService = MessageService.of(articleRepository, articleReader)

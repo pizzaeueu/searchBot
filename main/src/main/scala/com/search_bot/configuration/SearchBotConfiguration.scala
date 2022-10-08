@@ -16,19 +16,20 @@ object SearchBotConfiguration {
       migrationLocation: String
   )
 
-  def getBotToken[F[_]: Sync: MonadThrowable] = {
+  def getBotToken[F[_]: Sync] = {
     Sync[F]
       .delay(ConfigSource.default.at("bot-token").loadOrThrow[BotToken])
   }
 
-  def getDatabaseConfig[F[_]: Sync: MonadThrowable] = {
+  def getDatabaseConfig[F[_]: Sync](
+      implicit monadThrowable: MonadThrowable[F]) = {
     Sync[F]
       .delay(ConfigSource.default.at("db").load[DatabaseConfig])
       .flatMap[DatabaseConfig] {
         case Right(value) =>
           value.pure[F]
         case Left(err) =>
-          MonadThrowable.summon.raiseError(
+          monadThrowable.raiseError(
             new RuntimeException(err.prettyPrint())
           )
       }

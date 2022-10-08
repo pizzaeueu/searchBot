@@ -1,7 +1,7 @@
 package seatch_bot.repository
 
 import cats.effect.IO
-import cats.effect.concurrent.Ref
+import cats.effect.Ref
 import cats.implicits.{catsSyntaxOptionId, none}
 import com.evolutiongaming.catshelper.testkit.PureTest
 import com.search_bot.domain.Article.{Article, ArticleUrl, ArticleWords, ChatId}
@@ -13,8 +13,7 @@ import org.scalatest.matchers.should.Matchers
 class InMemoryRepoSpec extends AnyFlatSpec with Matchers with MockFactory {
 
   "In memory repo" should "retrieve data by keyword for chat" in {
-    PureTest.ioTest { env =>
-      import env._
+    PureTest.ioTest { _ =>
       val keyword = "Test"
       val keywordList = List(keyword)
       val chatId = 1L
@@ -29,7 +28,7 @@ class InMemoryRepoSpec extends AnyFlatSpec with Matchers with MockFactory {
         repo <- IO.pure(ArticleRepository.inMemory(ref))
         _ <- repo.saveArticle(article)
         out <- repo.getByKeywordForChat(keyword, chatId)
-      } yield  out
+      } yield out
 
       res.map(_ shouldBe List(article))
 
@@ -37,8 +36,7 @@ class InMemoryRepoSpec extends AnyFlatSpec with Matchers with MockFactory {
   }
 
   "In memory repo" should "retrieve data by url for chat" in {
-    PureTest.ioTest { env =>
-      import env._
+    PureTest.ioTest { _ =>
       val chatId = 1L
       val url = "www.test.com"
       val article = Article(
@@ -52,7 +50,7 @@ class InMemoryRepoSpec extends AnyFlatSpec with Matchers with MockFactory {
         repo <- IO.pure(ArticleRepository.inMemory(ref))
         _ <- repo.saveArticle(article)
         out <- repo.getByUrlForChat(url, chatId)
-      } yield  out
+      } yield out
 
       res.map(_ shouldBe article.some)
 
@@ -60,14 +58,12 @@ class InMemoryRepoSpec extends AnyFlatSpec with Matchers with MockFactory {
   }
 
   "In memory repo" should "retrieve empty result by missing url for chat" in {
-    PureTest.ioTest { env =>
-      import env._
-
+    PureTest.ioTest { _ =>
       val res = for {
         ref <- Ref.of[IO, Vector[Article]](Vector())
         repo <- IO.pure(ArticleRepository.inMemory(ref))
         out <- repo.getByUrlForChat("Test", 1L)
-      } yield  out
+      } yield out
 
       res.map(_ shouldBe none)
 

@@ -1,17 +1,17 @@
 package com.search_bot.bot
 
-import cats.effect.{ContextShift, Resource, Sync}
+import cats.effect.{Resource, Sync}
 import cats.syntax.all._
 import com.bot4s.telegram.cats.{Polling, TelegramBot}
 import com.bot4s.telegram.models.Message
 import com.search_bot.domain.{BotToken, Messages}
 import com.search_bot.service.MessageService
-import com.softwaremill.sttp.SttpBackend
+import sttp.client3.SttpBackend
 
 object SearchBot {
-  def make[F[_]: Sync: ContextShift](
+  def make[F[_]: Sync](
       token: BotToken,
-      server: SttpBackend[F, Nothing],
+      server: SttpBackend[F, Any],
       service: MessageService[F]
   ): Resource[F, TelegramBot[F]] = {
 
