@@ -3,7 +3,7 @@ import Dependencies._
 enablePlugins(DockerComposePlugin)
 
 ThisBuild / organization := "com.search_bot"
-ThisBuild / scalaVersion := "2.13.7"
+ThisBuild / scalaVersion := "2.13.10"
 ThisBuild / version := "0.0.1-SNAPSHOT"
 ThisBuild / scalafmtOnCompile := true
 ThisBuild / scalafmtTestOnCompile := true
@@ -65,7 +65,6 @@ lazy val commonSettings = Seq(
     Cats.effects,
     UnitTest.scalaTest,
     UnitTest.scalaMock,
-    UnitTest.catsHelperTestKil,
     Utils.evoCatsHelper
   ),
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")

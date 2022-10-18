@@ -7,8 +7,8 @@ object Dependencies {
   }
 
   object Cats {
-    val core = "org.typelevel" %% "cats-core" % "2.1.1"
-    val effects = "org.typelevel" %% "cats-effect" % "2.2.0"
+    val core    = "org.typelevel" %% "cats-core"   % "2.1.1"
+    val effects = "org.typelevel" %% "cats-effect" % "3.3.14"
   }
 
   object Sttp {
@@ -18,15 +18,14 @@ object Dependencies {
   object UnitTest {
     val scalaTest = "org.scalatest" %% "scalatest" % "3.2.3" % Test
     val scalaMock = "org.scalamock" %% "scalamock" % "4.4.0" % Test
-    val catsHelperTestKil = "com.evolutiongaming" %% "cats-helper-testkit" % "2.8.0"
   }
 
   object Database {
-    val doobieVersion = "1.0.0-M1"
-    val doobie = "org.tpolecat" %% "doobie-core" % doobieVersion
-    val doobiePostgres = "org.tpolecat" %% "doobie-postgres"  % doobieVersion
-    val doobieHikari = "org.tpolecat" %% "doobie-hikari" % doobieVersion
-    val flywayCore = "org.flywaydb" % "flyway-core" % "6.2.4"
+    val doobieVersion  = "1.0.0-M1"
+    val doobie         = "org.tpolecat" %% "doobie-core"     % doobieVersion
+    val doobiePostgres = "org.tpolecat" %% "doobie-postgres" % doobieVersion
+    val doobieHikari   = "org.tpolecat" %% "doobie-hikari"   % doobieVersion
+    val flywayCore     = "org.flywaydb"  % "flyway-core"     % "6.2.4"
   }
 
   object Config {
@@ -38,15 +37,14 @@ object Dependencies {
   }
 
   object Http4s {
-   val http4sVersion = "0.23.9"
-   val dsl =  "org.http4s" %% "http4s-dsl" % http4sVersion
-   val client = "org.http4s" %% "http4s-blaze-client" % "0.23.9"
+    val http4sVersion = "0.23.9"
+    val dsl           = "org.http4s" %% "http4s-dsl"          % http4sVersion
+    val client        = "org.http4s" %% "http4s-blaze-client" % "0.23.9"
   }
 
   object Utils {
-    val jsoup = "org.jsoup" % "jsoup" % "1.13.1"
+    val jsoup         = "org.jsoup"            % "jsoup"       % "1.13.1"
     val evoCatsHelper = "com.evolutiongaming" %% "cats-helper" % "3.2.0"
   }
-
 
 }

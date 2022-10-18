@@ -20,7 +20,7 @@ class MessagesSpec extends AnyFlatSpec with Matchers {
       messageId = 1,
       date = 1,
       chat = mockChat,
-      text = Some(s"/scan $url")
+      text = Some(s"/scan $url"),
     )
 
     Messages.of(mockMessage) shouldBe (ScanArticle(url, mockChat.id))
@@ -34,7 +34,7 @@ class MessagesSpec extends AnyFlatSpec with Matchers {
       messageId = 1,
       date = 1,
       chat = mockChat,
-      text = Some(s"/find $keyword")
+      text = Some(s"/find $keyword"),
     )
 
     Messages.of(mockMessage) shouldBe (GetArticle(keyword, mockChat.id))
@@ -48,7 +48,7 @@ class MessagesSpec extends AnyFlatSpec with Matchers {
       messageId = 1,
       date = 1,
       chat = mockChat,
-      text = Some(invalidCommand)
+      text = Some(invalidCommand),
     )
 
     Messages.of(mockMessage) shouldBe (CommandNotSupported(mockChat.id,

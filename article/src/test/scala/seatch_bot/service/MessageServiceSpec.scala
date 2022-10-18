@@ -15,103 +15,98 @@ import com.search_bot.service.MessageService
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import com.evolutiongaming.catshelper.testkit.PureTest
+import cats.effect.unsafe.IORuntime
 
 class MessageServiceSpec extends AnyFlatSpec with Matchers with MockFactory {
+
+  implicit val runtime = IORuntime.global
 
   private val fakeArticleRepo = mock[ArticleRepository[IO]]
   private val fakeHtmlReader = mock[HtmlReader[IO]]
 
   "Message Service" should "save articles for valid scan command" in {
 
-    PureTest.ioTest { _ =>
-      val service = MessageService.of[IO](fakeArticleRepo, fakeHtmlReader)
-      val url = "url"
-      val chatId = 1L
-      val keywords = List("keyword")
-      val message = ScanArticle(url, chatId)
+    val service = MessageService.of[IO](fakeArticleRepo, fakeHtmlReader)
+    val url = "url"
+    val chatId = 1L
+    val keywords = List("keyword")
+    val message = ScanArticle(url, chatId)
 
-      (fakeHtmlReader.retrieveKeywords _).expects(url).returns(IO(keywords))
-      (fakeArticleRepo.getByUrlForChat _).expects(url, chatId).returns(IO(None))
-      (fakeArticleRepo.saveArticle _)
-        .expects(
-          Article(ArticleUrl(url), ChatId(chatId), ArticleWords(keywords)))
-        .returns(IO(1))
+    (fakeHtmlReader.retrieveKeywords _).expects(url).returns(IO(keywords))
+    (fakeArticleRepo.getByUrlForChat _).expects(url, chatId).returns(IO(None))
+    (fakeArticleRepo.saveArticle _)
+      .expects(Article(ArticleUrl(url), ChatId(chatId), ArticleWords(keywords)))
+      .returns(IO(1))
 
-      service
-        .handle(message)
-        .map(_ shouldBe SuccessfullySave(SendMessage(chatId, "Saved")))
-    }
+    val res = service
+      .handle(message)
+    res.unsafeRunSync() shouldBe SuccessfullySave(SendMessage(chatId, "Saved"))
   }
 
   "Message Service" should "show error for duplicated article" in {
 
-    PureTest.ioTest { _ =>
-      val service = MessageService.of[IO](fakeArticleRepo, fakeHtmlReader)
-      val url = "url"
-      val chatId = 1L
-      val keywords = List("keyword")
-      val message = ScanArticle(url, chatId)
+    val service = MessageService.of[IO](fakeArticleRepo, fakeHtmlReader)
+    val url = "url"
+    val chatId = 1L
+    val keywords = List("keyword")
+    val message = ScanArticle(url, chatId)
 
-      (fakeHtmlReader.retrieveKeywords _).expects(url).returns(IO(keywords))
-      (fakeArticleRepo.getByUrlForChat _)
-        .expects(url, chatId)
-        .returns(IO(Some(
-          Article(ArticleUrl(url), ChatId(chatId), ArticleWords(keywords)))))
+    (fakeHtmlReader.retrieveKeywords _).expects(url).returns(IO(keywords))
+    (fakeArticleRepo.getByUrlForChat _)
+      .expects(url, chatId)
+      .returns(IO(
+        Some(Article(ArticleUrl(url), ChatId(chatId), ArticleWords(keywords)))))
 
-      service
-        .handle(message)
-        .map(_ shouldBe ArticleAlreadyExists(
-          SendMessage(chatId, "Article has already saved")))
-    }
+    val res = service
+      .handle(message)
+    res.unsafeRunSync() shouldBe ArticleAlreadyExists(
+      SendMessage(chatId, "Article has already saved"))
 
   }
 
   "Message Service" should "retrieve articles for valid get command" in {
 
-    PureTest.ioTest { _ =>
-      val service = MessageService.of[IO](fakeArticleRepo, fakeHtmlReader)
-      val keyword = "keyword"
-      val chatId = 1L
-      val requestedUrl = "www.test.com"
-      val message = GetArticle(keyword, chatId)
-      val articles = List(
-        Article(ArticleUrl(requestedUrl),
-                ChatId(chatId),
-                ArticleWords(List(keyword))))
+    val service = MessageService.of[IO](fakeArticleRepo, fakeHtmlReader)
+    val keyword = "keyword"
+    val chatId = 1L
+    val requestedUrl = "www.test.com"
+    val message = GetArticle(keyword, chatId)
+    val articles = List(
+      Article(ArticleUrl(requestedUrl),
+              ChatId(chatId),
+              ArticleWords(List(keyword))))
 
-      (fakeArticleRepo.getByKeywordForChat _)
-        .expects(keyword, chatId)
-        .returns(IO(articles))
+    (fakeArticleRepo.getByKeywordForChat _)
+      .expects(keyword, chatId)
+      .returns(IO(articles))
 
-      service
-        .handle(message)
-        .map(_ shouldBe SuccessfullySave(SendMessage(chatId, requestedUrl)))
-    }
+    val res = service
+      .handle(message)
+    res.unsafeRunSync() shouldBe SuccessfullySave(
+      SendMessage(chatId, requestedUrl))
 
   }
 
   "Message Service" should "send error message for unexpected error" in {
-    PureTest.ioTest { _ =>
-      val service = MessageService.of[IO](fakeArticleRepo, fakeHtmlReader)
-      val keyword = "keyword"
-      val chatId = 1L
-      val err = new RuntimeException("Test Error")
-      val message = GetArticle(keyword, chatId)
+    val service = MessageService.of[IO](fakeArticleRepo, fakeHtmlReader)
+    val keyword = "keyword"
+    val chatId = 1L
+    val err = new RuntimeException("Test Error")
+    val message = GetArticle(keyword, chatId)
 
-      (fakeArticleRepo.getByKeywordForChat _)
-        .expects(keyword, chatId)
-        .returns(IO.raiseError(err))
+    (fakeArticleRepo.getByKeywordForChat _)
+      .expects(keyword, chatId)
+      .returns(IO.raiseError(err))
 
-      service
-        .handle(message)
-        .map(
-          _ shouldBe FailHandleMessage(
-            SendMessage(
-              chatId,
-              s"Unexpected Error during process. Please contact owner for details. Error Message - ${err.getMessage}"
-            )
-          ))
-    }
+    val res = service
+      .handle(message)
+
+    res.unsafeRunSync() shouldBe FailHandleMessage(
+      SendMessage(
+        chatId,
+        s"Unexpected Error during process. Please contact owner for details. Error Message - ${err.getMessage}",
+      )
+    )
+
   }
 }
