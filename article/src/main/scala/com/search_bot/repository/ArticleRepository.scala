@@ -1,11 +1,11 @@
 package com.search_bot.repository
 
-import cats.effect.Async
-import cats.effect.Ref
+import cats.effect.{Async, Ref}
+import cats.syntax.flatMap._
 import com.search_bot.domain.Article.Article
-import doobie.{LogHandler, Transactor}
 import doobie.implicits._
 import doobie.postgres.implicits._
+import doobie.{LogHandler, Transactor}
 
 trait ArticleRepository[F[_]] {
 
@@ -31,11 +31,16 @@ object ArticleRepository {
       ): F[List[Article]] =
         Queries.getByKeywordForChat(word, chatId).transact(transactor)
 
-      override def saveArticle(article: Article): F[Int] =
-        Queries.insertArticle(article).transact(transactor)
+      override def saveArticle(article: Article): F[Int] = {
+        Async[F].blocking {
+          Queries.insertArticle(article).transact(transactor)
+        }.flatten
+      }
 
-      override def getByUrlForChat(url: String,
-                                   chatId: Long): F[Option[Article]] =
+      override def getByUrlForChat(
+          url: String,
+          chatId: Long
+      ): F[Option[Article]] =
         Queries.getByUrlForChat(url, chatId).transact(transactor)
 
       object Queries {
@@ -62,8 +67,10 @@ object ArticleRepository {
     new ArticleRepository[F] {
       import cats.syntax.all._
 
-      override def getByKeywordForChat(word: String,
-                                       chatId: Long): F[List[Article]] =
+      override def getByKeywordForChat(
+          word: String,
+          chatId: Long
+      ): F[List[Article]] =
         state.get.map { articles =>
           articles
             .filter(article => article.words.value.contains(word))
@@ -74,8 +81,10 @@ object ArticleRepository {
       override def saveArticle(article: Article): F[Int] =
         state.modify(articles => (articles :+ article) -> 1)
 
-      override def getByUrlForChat(url: String,
-                                   chatId: Long): F[Option[Article]] =
+      override def getByUrlForChat(
+          url: String,
+          chatId: Long
+      ): F[Option[Article]] =
         state.get.map { articles =>
           articles
             .filter(article => article.chatId.value == chatId)

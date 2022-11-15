@@ -57,7 +57,8 @@ object MessageService {
           }
         case GetCommandsList(chatId) =>
           val commandsListResponse: TelegramResponse = CommandsList(
-            SendMessage(chatId, Responses.CommandListResponse))
+            SendMessage(chatId, Responses.CommandListResponse)
+          )
           commandsListResponse.pure[F]
         case CommandNotSupported(chatId, command) =>
           val failResponse: TelegramResponse = FailHandleMessage(
@@ -86,7 +87,9 @@ object MessageService {
         case Some(_) =>
           Sync[F].pure(
             ArticleAlreadyExists(
-              SendMessage(chatId, "Article has already saved")))
+              SendMessage(chatId, "Article has already saved")
+            )
+          )
         case None =>
           articleRepo.saveArticle(article) *> MonadThrowable.summon.pure(
             SuccessfullySave(SendMessage(chatId, "Saved")))
@@ -107,9 +110,11 @@ object MessageService {
           SuccessfullySave(SendMessage(chatId, urls)).pure[F]
         case _ =>
           ArticleNotFound(
-            SendMessage(chatId,
-                        s"Article with keyword =  $keyword wasn't found"))
-            .pure[F]
+            SendMessage(
+              chatId,
+              s"Article with keyword =  $keyword wasn't found"
+            )
+          ).pure[F]
       }
     } yield response
 
@@ -117,8 +122,9 @@ object MessageService {
       err: Throwable,
       chatId: Long
   )(implicit logger: Log[F]): F[TelegramResponse] =
-    logger.error(s"Error During message handling: chatId $chatId, err: $err") *> Sync[
-      F].pure {
+    logger.error(
+      s"Error During message handling: chatId $chatId, err: $err"
+    ) *> Sync[F].pure {
       FailHandleMessage(
         SendMessage(
           chatId,

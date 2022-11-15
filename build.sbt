@@ -8,6 +8,8 @@ ThisBuild / version := "0.0.1-SNAPSHOT"
 ThisBuild / scalafmtOnCompile := true
 ThisBuild / scalafmtTestOnCompile := true
 
+ThisBuild / scalafmtOnCompile := true
+
 lazy val searchBot =
   project
     .in(file("."))
@@ -27,7 +29,7 @@ lazy val main =
     .settings(
       libraryDependencies ++= Seq(
         Database.flywayCore,
-        Config.pureConfig,
+        Config.pureConfig
       )
     )
 
@@ -42,7 +44,7 @@ lazy val article =
         Database.doobie,
         Database.doobiePostgres,
         Database.doobieHikari,
-        Log.logback,
+        Log.logback
       )
     )
     .dependsOn(reader)
@@ -55,7 +57,7 @@ lazy val reader =
       libraryDependencies ++= Seq(
         Http4s.dsl,
         Http4s.client,
-        Utils.jsoup,
+        Utils.jsoup
       )
     )
 
@@ -65,7 +67,7 @@ lazy val commonSettings = Seq(
     Cats.effects,
     UnitTest.scalaTest,
     UnitTest.scalaMock,
-    Utils.evoCatsHelper,
+    Utils.evoCatsHelper
   ),
-  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
+  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )
